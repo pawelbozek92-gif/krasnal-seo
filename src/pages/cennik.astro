@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/Faq.astro';
+import CtaBand from '../components/CtaBand.astro';
+import VatToggle from '../components/pricing/VatToggle.astro';
+import PackageCards from '../components/pricing/PackageCards.astro';
+import ProjectCards from '../components/pricing/ProjectCards.astro';
+import PricingCalculator from '../components/pricing/PricingCalculator.astro';
+import ComparisonTable from '../components/pricing/ComparisonTable.astro';
+import { pricingFaq } from '../data/faq';
+import { commercialTerms } from '../data/pricing';
+import { faqPage, packageServices, auditService } from '../lib/schema';
+---
+
+<BaseLayout
+  title="Cennik SEO – pakiety z godzinami eksperta"
+  description="Przejrzysty cennik SEO dla firm B2B: abonamenty START, GROWTH i SCALE z liczbą godzin eksperta, audyt SEO i konsultacje. Policz swój zakres w kalkulatorze."
+  path="/cennik/"
+  breadcrumbs={[{ name: 'Cennik', path: '/cennik/' }]}
+  schema={[...packageServices(), auditService(), faqPage(pricingFaq)]}
+>
+  <section class="page-hero">
+    <div class="container">
+      <span class="eyebrow">Cennik</span>
+      <h1>Cennik SEO z godzinami eksperta w każdym pakiecie</h1>
+      <p class="lead">
+        Wiesz, za co płacisz: każdy abonament ma określoną liczbę godzin pracy eksperta, a miesięczny raport pokazuje,
+        ile z nich wykorzystałem. Bez długich umów i bez ukrytych kosztów.
+      </p>
+      <VatToggle />
+    </div>
+  </section>
+
+  <section class="section section--tight" aria-labelledby="packages-title">
+    <div class="container">
+      <h2 id="packages-title" class="pricing-subhead">Abonamenty miesięczne</h2>
+      <PackageCards />
+    </div>
+  </section>
+
+  <section class="section section--tight" aria-labelledby="projects-title">
+    <div class="container">
+      <h2 id="projects-title" class="pricing-subhead">Projekty jednorazowe</h2>
+      <ProjectCards />
+    </div>
+  </section>
+
+  <section class="section section--alt" id="kalkulator" aria-labelledby="calc-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Kalkulator</span>
+        <h2 id="calc-title">Złóż swój zakres</h2>
+        <p>Wybierz pakiet i dodatki – od razu zobaczysz koszt miesięczny, jednorazowy i za pierwszy miesiąc.</p>
+      </div>
+      <PricingCalculator />
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="compare-title">
+    <div class="container">
+      <h2 id="compare-title" class="pricing-subhead">Porównanie pakietów</h2>
+      <ComparisonTable />
+
+      <div class="terms">
+        <h3>Warunki współpracy</h3>
+        <ul class="check-list">
+          {commercialTerms.map((t) => <li>{t}</li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head section-head--center">
+        <span class="eyebrow">FAQ</span>
+        <h2 id="faq-title">Pytania o cennik i współpracę</h2>
+      </div>
+      <Faq items={pricingFaq} center />
+    </div>
+  </section>
+
+  <CtaBand title="Nie wiesz, który pakiet wybrać?" text="Opowiedz mi o swojej firmie i celach. Na bezpłatnej rozmowie dobierzemy zakres – również wtedy, gdy na start wystarczy sam audyt." />
+</BaseLayout>
+
+<style>
+  .page-hero :global(.vat-toggle),
+  .page-hero :global(p.vat-toggle__note) {
+    margin-top: var(--s-3);
+  }
+  .pricing-subhead {
+    font-size: var(--fs-xl);
+    margin-bottom: var(--s-6);
+  }
+  .terms {
+    margin-top: var(--s-7);
+    padding: var(--s-6);
+    border-radius: var(--radius);
+    background: var(--surface-alt);
+  }
+  .terms .check-list {
+    margin: 0;
+  }
+</style>

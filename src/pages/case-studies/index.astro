@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CaseStudyCard from '../../components/CaseStudyCard.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { caseStudies, allCaseStudiesAreExamples, exampleCaseStudies } from '../../data/case-studies';
+
+if (exampleCaseStudies.length) {
+  console.warn(`[case-studies] Example entries still present: ${exampleCaseStudies.map((c) => c.slug).join(', ')}`);
+}
+---
+
+<BaseLayout
+  title="Case studies SEO dla firm B2B"
+  description="Zanonimizowane case studies SEO dla firm B2B: wyzwanie, wykonane prace i wyniki mierzone w leadach i ruchu non-brand."
+  path="/case-studies/"
+  noindex={allCaseStudiesAreExamples}
+  breadcrumbs={[{ name: 'Case studies', path: '/case-studies/' }]}
+>
+  <section class="page-hero">
+    <div class="container">
+      <span class="eyebrow">Case studies</span>
+      <h1>Case studies SEO w firmach B2B</h1>
+      <p class="lead">
+        Każdy opis jest zanonimizowany – nie publikuję nazw klientów bez ich zgody. Pokazuję wyzwanie, to, co zrobiliśmy,
+        i wyniki w metrykach ważnych dla sprzedaży.
+      </p>
+      {
+        exampleCaseStudies.length > 0 && (
+          <p class="note small">
+            Opisy oznaczone jako „Przykładowy scenariusz – do podmiany” pokazują wyłącznie układ strony. Liczby są
+            ilustracyjne i nie dotyczą rzeczywistego klienta.
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <h2 class="visually-hidden">Lista case studies</h2>
+      <div class="grid grid--3">
+        {caseStudies.map((study) => <CaseStudyCard study={study} />)}
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>

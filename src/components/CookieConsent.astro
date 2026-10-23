@@ -1,0 +1,89 @@
+---
+/**
+ * Cookie banner + Google Consent Mode v2.
+ * Analytics is off by default; gtag.js is only injected after "Akceptuję".
+ * The consent default (all denied) is set inline in BaseLayout <head>.
+ */
+---
+
+<section class="cookie-banner" role="dialog" aria-modal="false" aria-labelledby="cookie-title" hidden data-cookie-banner>
+  <h2 id="cookie-title">Pliki cookies</h2>
+  <p>
+    Strona działa bez analitycznych plików cookies. Za Twoją zgodą użyję Google Analytics, żeby sprawdzić, które
+    treści są przydatne. Zgodę możesz zmienić w każdej chwili w stopce. Szczegóły w
+    <a href="/polityka-prywatnosci/#cookies">polityce prywatności</a>.
+  </p>
+  <div class="btn-row">
+    <button type="button" class="btn btn--secondary" data-consent="denied">Odrzucam</button>
+    <button type="button" class="btn btn--secondary" data-consent="granted">Akceptuję</button>
+  </div>
+</section>
+
+<script>
+  const KEY = 'ks-consent-v1';
+  const banner = document.querySelector<HTMLElement>('[data-cookie-banner]')!;
+  const w = window as unknown as { gtag: (...a: unknown[]) => void; __ga4Id: string };
+
+  const read = (): string | null => {
+    try {
+      return localStorage.getItem(KEY);
+    } catch {
+      return null;
+    }
+  };
+  const store = (v: string) => {
+    try {
+      localStorage.setItem(KEY, v);
+    } catch {
+      /* private mode: choice lasts for this page view */
+    }
+  };
+
+  let gaLoaded = false;
+  function loadAnalytics() {
+    if (gaLoaded || !w.__ga4Id) return;
+    gaLoaded = true;
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(w.__ga4Id)}`;
+    document.head.appendChild(s);
+    w.gtag('js', new Date());
+    w.gtag('config', w.__ga4Id, { anonymize_ip: true });
+  }
+
+  function apply(choice: string) {
+    const granted = choice === 'granted';
+    w.gtag('consent', 'update', { analytics_storage: granted ? 'granted' : 'denied' });
+    if (granted) loadAnalytics();
+    else {
+      // Remove GA cookies if consent was withdrawn.
+      document.cookie.split(';').forEach((c) => {
+        const name = c.split('=')[0].trim();
+        if (name.startsWith('_ga')) {
+          document.cookie = `${name}=; Max-Age=0; path=/; domain=.${location.hostname.replace(/^www\./, '')}`;
+          document.cookie = `${name}=; Max-Age=0; path=/`;
+        }
+      });
+    }
+  }
+
+  const saved = read();
+  if (saved) apply(saved);
+  else banner.hidden = false;
+
+  banner.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-consent]');
+    if (!btn) return;
+    const choice = btn.dataset.consent!;
+    store(choice);
+    apply(choice);
+    banner.hidden = true;
+  });
+
+  document.querySelectorAll('[data-cookie-settings]').forEach((el) =>
+    el.addEventListener('click', () => {
+      banner.hidden = false;
+      banner.querySelector<HTMLButtonElement>('[data-consent]')?.focus();
+    }),
+  );
+</script>

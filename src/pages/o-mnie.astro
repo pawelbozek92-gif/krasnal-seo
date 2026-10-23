@@ -1,0 +1,131 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DwarfMark from '../components/DwarfMark.astro';
+import Icon from '../components/Icon.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { site, isSet } from '../config/site';
+import { person } from '../lib/schema';
+
+const principles = [
+  { title: 'Biznes przed pozycjami', text: 'Zaczynam od pytania, które zapytania mają wartość dla Twojej sprzedaży. Pozycje są środkiem, nie celem.' },
+  { title: 'Najpierw największy wpływ', text: 'Priorytetyzuję zadania według wpływu i nakładu pracy. Małe, dobrze wybrane zmiany często dają najwięcej.' },
+  { title: 'Pełna przejrzystość', text: 'Widzisz, co zrobiłem, ile godzin to zajęło i jakie są efekty. Bez żargonu i bez ukrytych kosztów.' },
+  { title: 'Współpraca z Twoim zespołem', text: 'Przygotowuję briefy dla developerów i autorów treści, tak żeby wdrożenia szły sprawnie.' },
+];
+
+const tools = ['Senuto', 'Ahrefs', 'Screaming Frog', 'Google Analytics 4', 'Google Search Console', 'Looker Studio'];
+---
+
+<BaseLayout
+  title={`O mnie – ${site.ownerName}, konsultant SEO z Wrocławia`}
+  description={`${site.ownerName} – senior konsultant SEO z Wrocławia. Pracuję bezpośrednio z firmami B2B z całej Polski: techniczne SEO, strategia treści i digital PR.`}
+  path="/o-mnie/"
+  breadcrumbs={[{ name: 'O mnie', path: '/o-mnie/' }]}
+  schema={[person()]}
+>
+  <section class="page-hero">
+    <div class="container split about-hero">
+      <div>
+        <span class="eyebrow">O mnie</span>
+        <h1>{site.ownerName} – konsultant SEO, z którym pracujesz bezpośrednio</h1>
+        <p class="lead">
+          Prowadzę Krasnal SEO we Wrocławiu. Pomagam firmom usługowym B2B pozyskiwać klientów z Google – i coraz
+          częściej z wyszukiwarek opartych na AI.
+        </p>
+        <p>
+          Krasnal w nazwie to ukłon w stronę Wrocławia i mojego podejścia: małe, przemyślane zmiany, które dają duże
+          efekty. Pracuję sam, więc znam każdy projekt od środka.
+        </p>
+        {isSet(site.linkedinUrl) && <a href={site.linkedinUrl} rel="me noopener" target="_blank" class="btn btn--secondary">Profil na LinkedIn</a>}
+      </div>
+      <div class="photo-placeholder" role="img" aria-label="Miejsce na zdjęcie konsultanta">
+        <DwarfMark size={140} />
+        <span>[TODO: zdjęcie]</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight" aria-labelledby="experience-title">
+    <div class="container">
+      <h2 id="experience-title">Doświadczenie</h2>
+      <div class="note">
+        <p>
+          <span class="todo">[TODO: doświadczenie]</span> – lata pracy w SEO, branże, typy projektów (np. software house’y,
+          producenci, usługi profesjonalne), wcześniejsze role, certyfikaty i wystąpienia. Bez nazw klientów, jeśli nie
+          ma na to zgody.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="approach-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Podejście</span>
+        <h2 id="approach-title">Jak pracuję</h2>
+      </div>
+      <div class="grid grid--2">
+        {
+          principles.map((p) => (
+            <article class="card">
+              <h3>{p.title}</h3>
+              <p class="muted">{p.text}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="tools-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Narzędzia</span>
+        <h2 id="tools-title">Na czym pracuję</h2>
+        <p>Dane z Google łączę z narzędziami SEO, żeby decyzje opierały się na faktach.</p>
+      </div>
+      <ul class="tools">
+        {
+          tools.map((t) => (
+            <li>
+              <Icon name="check" size={18} />
+              {t}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand title="Porozmawiajmy o Twoim serwisie" />
+</BaseLayout>
+
+<style>
+  .about-hero {
+    align-items: center;
+  }
+  .about-hero h1 {
+    max-width: 22ch;
+  }
+  .tools {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+  }
+  .tools li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    padding: var(--s-3) var(--s-4);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-weight: 700;
+    background: #fff;
+  }
+  .tools :global(svg) {
+    color: var(--success);
+  }
+</style>

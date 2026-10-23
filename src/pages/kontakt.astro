@@ -1,0 +1,146 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactForm from '../components/ContactForm.astro';
+import Icon from '../components/Icon.astro';
+import { site, isSet, orTodo } from '../config/site';
+---
+
+<BaseLayout
+  title="Kontakt – umów bezpłatną rozmowę o SEO"
+  description="Skontaktuj się z Krasnal SEO. Umów bezpłatną, 30-minutową rozmowę o SEO Twojej firmy B2B lub zamów audyt. Wrocław i cała Polska."
+  path="/kontakt/"
+  breadcrumbs={[{ name: 'Kontakt', path: '/kontakt/' }]}
+>
+  <section class="page-hero">
+    <div class="container">
+      <span class="eyebrow">Kontakt</span>
+      <h1>Umów bezpłatną rozmowę</h1>
+      <p class="lead">
+        Opowiedz mi o swojej firmie i celach. Odpowiem w ciągu 1 dnia roboczego i zaproponuję termin 30-minutowej
+        rozmowy online – bez zobowiązań.
+      </p>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container contact-grid">
+      <div class="card">
+        <h2 class="contact-title">Napisz do mnie</h2>
+        <ContactForm source="kontakt" />
+      </div>
+
+      <div class="contact-side">
+        <section class="card" aria-labelledby="booking-title">
+          <h2 id="booking-title" class="contact-title">Wolisz od razu wybrać termin?</h2>
+          {
+            isSet(site.bookingUrl) ? (
+              <div class="booking" data-booking data-url={site.bookingUrl}>
+                <p class="muted small">
+                  Kalendarz ładuje się z zewnętrznego serwisu dopiero po kliknięciu.
+                </p>
+                <button type="button" class="btn btn--dark" data-booking-load>
+                  <Icon name="calendar" size={20} /> Pokaż kalendarz
+                </button>
+                <p class="small">
+                  lub <a href={site.bookingUrl} target="_blank" rel="noopener">otwórz kalendarz w nowej karcie</a>
+                </p>
+              </div>
+            ) : (
+              <div class="booking booking--todo">
+                <Icon name="calendar" size={32} />
+                <p class="small">
+                  <span class="todo">[TODO: link do kalendarza Cal.com / Calendly]</span>
+                  <br />
+                  Ustaw <code>bookingUrl</code> w <code>src/config/site.ts</code>.
+                </p>
+              </div>
+            )
+          }
+        </section>
+
+        <section class="card" aria-labelledby="company-title">
+          <h2 id="company-title" class="contact-title">Dane firmy</h2>
+          <address class="company">
+            <strong>{site.legalName}</strong>
+            <span>NIP: {orTodo(site.nip, 'NIP')}</span>
+            <span>{orTodo(site.address.street, 'ulica i numer')}, {orTodo(site.address.postalCode, 'kod')} {site.address.city}</span>
+            <span class="company__line">
+              <Icon name="mail" size={18} />
+              {isSet(site.email) ? <a href={`mailto:${site.email}`}>{site.email}</a> : orTodo(site.email, 'e-mail')}
+            </span>
+            <span class="company__line">
+              <Icon name="phone" size={18} />
+              {isSet(site.phone) ? <a href={`tel:${site.phone.replace(/\s/g, '')}`}>{site.phone}</a> : orTodo(site.phone, 'telefon')}
+            </span>
+          </address>
+          <p class="small muted">Pracuję zdalnie z firmami z całej Polski. Spotkania na miejscu: Wrocław i Dolny Śląsk.</p>
+        </section>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const box = document.querySelector<HTMLElement>('[data-booking]');
+  box?.querySelector('[data-booking-load]')?.addEventListener('click', () => {
+    const iframe = document.createElement('iframe');
+    iframe.src = box.dataset.url!;
+    iframe.title = 'Kalendarz rezerwacji rozmowy';
+    iframe.loading = 'lazy';
+    iframe.width = '100%';
+    iframe.height = '640';
+    iframe.style.border = '0';
+    box.replaceChildren(iframe);
+    iframe.focus();
+  });
+</script>
+
+<style>
+  .contact-grid {
+    display: grid;
+    gap: var(--s-6);
+    align-items: start;
+  }
+  @media (min-width: 960px) {
+    .contact-grid {
+      grid-template-columns: 1.5fr 1fr;
+    }
+  }
+  .contact-side {
+    display: grid;
+    gap: var(--s-5);
+  }
+  .contact-title {
+    font-size: var(--fs-xl);
+  }
+  .booking {
+    display: grid;
+    gap: var(--s-3);
+    justify-items: start;
+  }
+  .booking p {
+    margin: 0;
+  }
+  .booking--todo {
+    justify-items: center;
+    text-align: center;
+    padding: var(--s-5);
+    border: 2px dashed var(--line-strong);
+    border-radius: var(--radius-sm);
+    color: var(--ink-muted);
+  }
+  .company {
+    display: grid;
+    gap: var(--s-2);
+    font-style: normal;
+    margin-bottom: var(--s-4);
+  }
+  .company__line {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+  .company__line :global(svg) {
+    color: var(--orange-700);
+  }
+</style>

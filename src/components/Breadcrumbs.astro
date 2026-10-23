@@ -1,0 +1,23 @@
+---
+/** Visible breadcrumbs; the BreadcrumbList JSON-LD is emitted by BaseLayout. */
+export interface Props {
+  items: { name: string; path: string }[];
+}
+const { items } = Astro.props;
+---
+
+<nav class="breadcrumbs container" aria-label="Okruszki">
+  <ol>
+    {
+      items.map((item, i) =>
+        i === items.length - 1 ? (
+          <li aria-current="page">{item.name}</li>
+        ) : (
+          <li>
+            <a href={item.path}>{item.name}</a>
+          </li>
+        ),
+      )
+    }
+  </ol>
+</nav>

@@ -1,0 +1,28 @@
+---
+/**
+ * Brand logo (transparent PNG → AVIF/WebP at build time).
+ * Replace src/assets/brand/logo-full.png with the final logo file to update it everywhere.
+ */
+import { Picture } from 'astro:assets';
+import logoFull from '../assets/brand/logo-full.png';
+
+export interface Props {
+  /** Rendered height in CSS px; width follows the aspect ratio. */
+  height?: number;
+  eager?: boolean;
+}
+const { height = 46, eager = false } = Astro.props;
+const width = Math.round((logoFull.width / logoFull.height) * height);
+---
+
+<Picture
+  src={logoFull}
+  formats={['avif', 'webp']}
+  widths={[width, width * 2]}
+  sizes={`${width}px`}
+  width={width}
+  height={height}
+  alt="Krasnal SEO by Paweł Bożek"
+  loading={eager ? 'eager' : 'lazy'}
+  fetchpriority={eager ? 'high' : 'auto'}
+/>

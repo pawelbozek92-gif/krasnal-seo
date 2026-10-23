@@ -1,0 +1,265 @@
+---
+/**
+ * "Posłuchaj powitania" – jingle + voice greeting, never autoplayed.
+ * Web Audio mix: jingle intro at full level, ducked under the voice, faded out afterwards.
+ * Settings (mode, duck level, fades, transcript, file paths): src/data/motion.ts
+ */
+import { welcomeAudio } from '../data/motion';
+---
+
+<div class="welcome-audio" data-welcome-audio>
+  <button type="button" class="welcome-audio__play" aria-pressed="false" aria-describedby="wa-hint" data-wa-toggle>
+    <span class="welcome-audio__icon" aria-hidden="true" data-wa-icon>▶</span>
+    <span data-wa-label>Posłuchaj powitania</span>
+  </button>
+  <span id="wa-hint" class="welcome-audio__hint">ok. 12 s, z dźwiękiem</span>
+  <button type="button" class="link-button welcome-audio__transcript-toggle" aria-expanded="false" aria-controls="wa-transcript" data-wa-transcript-toggle>
+    Transkrypcja
+  </button>
+  <p id="wa-transcript" class="welcome-audio__transcript" hidden>„{welcomeAudio.transcript}”</p>
+  <p class="visually-hidden" role="status" aria-live="polite" data-wa-status></p>
+</div>
+
+<script>
+  import { welcomeAudio as cfg } from '../data/motion';
+  import { withBase } from '../lib/url';
+
+  type Pair = { opus: string; mp3: string };
+  type State = 'idle' | 'loading' | 'playing' | 'paused';
+
+  const root = document.querySelector<HTMLElement>('[data-welcome-audio]');
+  if (root) {
+    const toggle = root.querySelector<HTMLButtonElement>('[data-wa-toggle]')!;
+    const icon = root.querySelector<HTMLElement>('[data-wa-icon]')!;
+    const label = root.querySelector<HTMLElement>('[data-wa-label]')!;
+    const status = root.querySelector<HTMLElement>('[data-wa-status]')!;
+    const transcriptToggle = root.querySelector<HTMLButtonElement>('[data-wa-transcript-toggle]')!;
+    const transcript = root.querySelector<HTMLElement>('#wa-transcript')!;
+
+    let ctx: AudioContext | null = null;
+    let buffers: { jingle: AudioBuffer; voice: AudioBuffer } | null = null;
+    let sources: AudioBufferSourceNode[] = [];
+    let state: State = 'idle';
+    let tracked = false;
+
+    const render = (next: State, message?: string) => {
+      state = next;
+      const playing = next === 'playing';
+      toggle.setAttribute('aria-pressed', String(playing));
+      toggle.toggleAttribute('aria-busy', next === 'loading');
+      icon.textContent = playing ? '❚❚' : '▶';
+      label.textContent =
+        next === 'playing' ? 'Pauza' : next === 'paused' ? 'Wznów powitanie' : next === 'loading' ? 'Ładowanie…' : 'Posłuchaj powitania';
+      if (message) status.textContent = message;
+    };
+
+    const opusSupported = () => {
+      const probe = document.createElement('audio');
+      return probe.canPlayType('audio/ogg; codecs="opus"') !== '';
+    };
+
+    async function decode(audio: AudioContext, src: string) {
+      const res = await fetch(withBase(src));
+      if (!res.ok) throw new Error(`${res.status} ${src}`);
+      return audio.decodeAudioData(await res.arrayBuffer());
+    }
+    async function load(audio: AudioContext, pair: Pair) {
+      if (opusSupported()) {
+        try {
+          return await decode(audio, pair.opus);
+        } catch {
+          /* fall back to MP3 */
+        }
+      }
+      return decode(audio, pair.mp3);
+    }
+
+    function stopAll() {
+      for (const s of sources) {
+        s.onended = null;
+        try {
+          s.stop();
+        } catch {
+          /* already stopped */
+        }
+      }
+      sources = [];
+    }
+
+    function schedule(audio: AudioContext, b: { jingle: AudioBuffer; voice: AudioBuffer }) {
+      const t0 = audio.currentTime + 0.05;
+      const jingle = audio.createBufferSource();
+      const voice = audio.createBufferSource();
+      const jingleGain = audio.createGain();
+      const voiceGain = audio.createGain();
+      jingle.buffer = b.jingle;
+      voice.buffer = b.voice;
+      jingle.connect(jingleGain).connect(audio.destination);
+      voice.connect(voiceGain).connect(audio.destination);
+
+      // Short ramps everywhere: no clicks or pops.
+      const g = jingleGain.gain;
+      g.setValueAtTime(0, t0);
+      g.linearRampToValueAtTime(1, t0 + 0.02);
+
+      let voiceStart: number;
+      let end: number;
+      if (cfg.mode === 'overlay') {
+        voiceStart = t0 + cfg.introSeconds;
+        const voiceEnd = voiceStart + b.voice.duration;
+        // Fade ends fadeOutSeconds after the voice (or earlier if the jingle itself is shorter).
+        end = Math.max(voiceEnd + 0.05, Math.min(voiceEnd + cfg.fadeOutSeconds, t0 + b.jingle.duration));
+        g.setValueAtTime(1, Math.max(t0 + 0.02, voiceStart - cfg.duckRampSeconds));
+        g.linearRampToValueAtTime(cfg.duckLevel, voiceStart);
+        g.setValueAtTime(cfg.duckLevel, voiceEnd);
+        g.exponentialRampToValueAtTime(0.0001, end);
+        end = Math.max(end, voiceEnd);
+      } else {
+        voiceStart = t0 + b.jingle.duration;
+        end = voiceStart + b.voice.duration;
+      }
+
+      const v = voiceGain.gain;
+      v.setValueAtTime(0, voiceStart);
+      v.linearRampToValueAtTime(1, voiceStart + 0.015);
+
+      jingle.start(t0);
+      voice.start(voiceStart);
+      // stop() is only valid after start(); in overlay mode the jingle ends with its fade-out.
+      if (cfg.mode === 'overlay') jingle.stop(Math.min(end, t0 + b.jingle.duration) + 0.02);
+      sources = [jingle, voice];
+
+      // Finish when the last node ends.
+      const last = end - t0 > voiceStart - t0 + b.voice.duration ? jingle : voice;
+      last.onended = () => {
+        sources = [];
+        render('idle', 'Powitanie zakończone.');
+      };
+    }
+
+    function trackPlay() {
+      if (tracked) return;
+      tracked = true;
+      let consent: string | null = null;
+      try {
+        consent = localStorage.getItem('ks-consent-v1');
+      } catch {
+        /* storage blocked */
+      }
+      const w = window as unknown as { gtag?: (...a: unknown[]) => void; __ga4Id?: string };
+      if (consent === 'granted' && w.__ga4Id && w.gtag) w.gtag('event', cfg.analyticsEvent);
+    }
+
+    async function startGreeting() {
+      // Create/resume the context synchronously inside the click (required by iOS Safari).
+      if (!ctx) {
+        const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        ctx = new AC();
+        // iOS: let Web Audio play even with the ring/silent switch on (Safari 17+).
+        const nav = navigator as Navigator & { audioSession?: { type: string } };
+        if (nav.audioSession) nav.audioSession.type = 'playback';
+      }
+      const resumed = ctx.resume();
+      try {
+        if (!buffers) {
+          render('loading', 'Ładowanie powitania…');
+          const [jingle, voice] = await Promise.all([load(ctx, cfg.jingle), load(ctx, cfg.voice)]);
+          buffers = { jingle, voice };
+        }
+        await resumed;
+        schedule(ctx, buffers);
+        render('playing', 'Odtwarzanie powitania.');
+        trackPlay();
+        if (cfg.restartVideoOnPlay) document.dispatchEvent(new CustomEvent('krasnal:welcome-play'));
+      } catch (err) {
+        console.warn('[welcome-audio]', err);
+        stopAll();
+        render('idle', 'Nie udało się odtworzyć powitania. Przeczytaj transkrypcję poniżej.');
+        transcript.hidden = false;
+        transcriptToggle.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    toggle.addEventListener('click', () => {
+      if (state === 'loading') return;
+      if (state === 'idle') startGreeting();
+      else if (state === 'playing') {
+        ctx!.suspend();
+        render('paused', 'Wstrzymano.');
+      } else if (state === 'paused') {
+        ctx!.resume();
+        render('playing', 'Wznowiono.');
+      }
+    });
+
+    transcriptToggle.addEventListener('click', () => {
+      const open = transcript.hidden;
+      transcript.hidden = !open;
+      transcriptToggle.setAttribute('aria-expanded', String(open));
+    });
+  }
+</script>
+
+<style>
+  .welcome-audio {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-2) var(--s-3);
+    margin-top: var(--s-5);
+  }
+  .welcome-audio__play {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: 44px;
+    padding: 0.5rem 1rem 0.5rem 0.55rem;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--navy-800);
+    font: inherit;
+    font-weight: 800;
+    font-size: var(--fs-sm);
+    cursor: pointer;
+    transition:
+      border-color var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out);
+  }
+  .welcome-audio__play:hover {
+    border-color: var(--navy-800);
+  }
+  .welcome-audio__play[aria-pressed='true'] {
+    background: #f0f4fa;
+    border-color: var(--navy-800);
+  }
+  .welcome-audio__icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--orange-500);
+    color: var(--navy-900);
+    font-size: 0.8rem;
+    letter-spacing: -0.1em;
+  }
+  .welcome-audio__hint {
+    font-size: var(--fs-xs);
+    color: var(--ink-muted);
+  }
+  .welcome-audio__transcript-toggle {
+    font-size: var(--fs-sm);
+  }
+  .welcome-audio__transcript {
+    flex-basis: 100%;
+    margin: var(--s-1) 0 0;
+    padding: var(--s-3) var(--s-4);
+    border-left: 3px solid var(--orange-500);
+    background: #fff;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: var(--fs-sm);
+    color: var(--ink-muted);
+    font-style: italic;
+  }
+</style>

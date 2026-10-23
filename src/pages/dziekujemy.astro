@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DwarfMark from '../components/DwarfMark.astro';
+---
+
+<BaseLayout
+  title="Dziękuję za wiadomość"
+  description="Wiadomość została wysłana. Odpowiem w ciągu 1 dnia roboczego."
+  path="/dziekujemy/"
+  noindex
+>
+  <section class="section">
+    <div class="container status-page">
+      <DwarfMark size={150} />
+      <h1>Dziękuję, wiadomość dotarła</h1>
+      <p class="lead">Odpowiem w ciągu 1 dnia roboczego i zaproponuję termin rozmowy.</p>
+      <div class="btn-row">
+        <a href="/" class="btn btn--secondary">Strona główna</a>
+        <a href="/case-studies/" class="btn btn--secondary">Case studies</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,63 @@
+---
+import { projects, auditCredit, auditCreditAmount } from '../../data/pricing';
+import { site } from '../../config/site';
+import { formatPLN } from '../../lib/format';
+
+const vatLabel = site.vatPayer ? 'netto' : 'zw. z VAT';
+---
+
+<div class="grid grid--3">
+  {
+    projects.map((p) => (
+      <article class="card project-card" id={`projekt-${p.id}`}>
+        <h3>{p.name}</h3>
+        <p class="project-card__price">
+          <span data-price-net={p.priceNet} data-price-suffix={p.unit === 'hour' ? ' / h' : ''}>
+            {formatPLN(p.priceNet)}
+            {p.unit === 'hour' ? ' / h' : ''}
+          </span>{' '}
+          <span class="muted small" data-vat-short>
+            {vatLabel}
+          </span>
+        </p>
+        <p class="muted">{p.description}</p>
+        <ul class="check-list">
+          {p.items.map((i) => (
+            <li>{i}</li>
+          ))}
+        </ul>
+        {p.id === 'audit' && (
+          <p class="note small">
+            <strong>{Math.round(auditCredit.rate * 100)}% ceny audytu ({formatPLN(auditCreditAmount)} netto)</strong> zaliczam
+            na poczet abonamentu, jeśli podpiszesz umowę w ciągu {auditCredit.windowDays} dni.
+          </p>
+        )}
+        {p.href && (
+          <a href={p.href} class="project-card__link">
+            Szczegóły audytu
+          </a>
+        )}
+      </article>
+    ))
+  }
+</div>
+
+<style>
+  .project-card {
+    display: flex;
+    flex-direction: column;
+  }
+  .project-card__price {
+    font-size: var(--fs-xl);
+    font-weight: 800;
+    color: var(--navy-800);
+    margin-bottom: var(--s-3);
+  }
+  .project-card .check-list {
+    margin-bottom: var(--s-4);
+  }
+  .project-card__link {
+    margin-top: auto;
+    font-weight: 700;
+  }
+</style>

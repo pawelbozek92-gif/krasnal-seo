@@ -1,0 +1,434 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import DwarfMark from '../components/DwarfMark.astro';
+import Faq from '../components/Faq.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Testimonials from '../components/Testimonials.astro';
+import CaseStudyCard from '../components/CaseStudyCard.astro';
+import HeroVideo from '../components/HeroVideo.astro';
+import WelcomeAudio from '../components/WelcomeAudio.astro';
+import PackageCards from '../components/pricing/PackageCards.astro';
+import { homeFaq } from '../data/faq';
+import { caseStudies } from '../data/case-studies';
+import { projectById, auditCredit } from '../data/pricing';
+import { formatPLN } from '../lib/format';
+import { faqPage, packageServices } from '../lib/schema';
+
+const audit = projectById('audit');
+
+const problems = [
+  { problem: 'Ofertę przedstawia handlowiec, a pracę wykonuje ktoś, kogo nigdy nie poznasz.', solution: 'Rozmawiasz i pracujesz bezpośrednio ze mną – seniorem, który odpowiada za wynik.' },
+  { problem: 'Raport pełen pozycji i wykresów, z których nie wynika, ile było zapytań.', solution: 'Mierzę leady organiczne i ruch non-brand, czyli to, co przekłada się na sprzedaż.' },
+  { problem: 'Abonament „za wszystko”, bez informacji, ile czasu poświęcono Twojej firmie.', solution: 'Każdy pakiet ma liczbę godzin, a raport pokazuje, ile wykorzystałem i na co.' },
+  { problem: 'Umowa na 12 miesięcy, zanim zobaczysz pierwsze efekty.', solution: '3 miesiące na start, potem współpraca z miesiąca na miesiąc z 1-miesięcznym wypowiedzeniem.' },
+];
+
+const steps = [
+  { title: 'Audyt', icon: 'search', text: 'Sprawdzam stan techniczny, indeksację, treści i konkurencję. Wiesz, co blokuje wzrost.' },
+  { title: 'Strategia', icon: 'map', text: 'Ustalamy cele i KPI, wybieramy tematy i strony, które realnie przyniosą zapytania.' },
+  { title: 'Wdrożenie', icon: 'code', text: 'Optymalizuję serwis, przygotowuję briefy treści i współpracuję z Twoimi developerami.' },
+  { title: 'Raport i optymalizacja', icon: 'chart', text: 'Co miesiąc: KPI, wykonane prace, wykorzystane godziny i plan na kolejny miesiąc.' },
+] as const;
+
+const differentiators = [
+  { icon: 'user', title: 'Bezpośrednio z ekspertem', text: 'Bez opiekunów klienta i przekazywania zadań juniorom. Osoba, która sprzedaje, wykonuje pracę – i zna Twój serwis.' },
+  { icon: 'clock', title: 'Przejrzyste godziny', text: 'Każdy pakiet zawiera konkretną liczbę godzin eksperta. W raporcie widzisz, ile z nich wykorzystałem i na jakie zadania.' },
+  { icon: 'spark', title: 'Gotowe na wyszukiwanie z AI', text: 'Praca nad encją firmy, ustrukturyzowane treści i digital PR – żeby Twoja marka była cytowana także w AI Overviews.' },
+] as const;
+---
+
+<BaseLayout
+  title="Krasnal SEO – konsultant SEO dla firm B2B z Wrocławia"
+  description="Senior konsultant SEO z Wrocławia dla firm usługowych B2B z całej Polski. Przejrzyste pakiety z godzinami eksperta, efekty mierzone w leadach i ruchu non-brand."
+  path="/"
+  schema={[faqPage(homeFaq), ...packageServices()]}
+>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <p class="eyebrow">Konsultant SEO dla firm B2B</p>
+        <h1>Małe zmiany, duże wyniki w&nbsp;Google.</h1>
+        <p class="hero__sub">SEO z Wrocławia dla firm B2B z całej Polski.</p>
+        <p class="lead">
+          Pracujesz bezpośrednio z seniorem SEO. Bez warstwy opiekunów, z jasną liczbą godzin w każdym pakiecie i
+          efektami mierzonymi w zapytaniach ofertowych, a nie tylko w pozycjach.
+        </p>
+        <div class="btn-row">
+          <a href="/audyt-seo/" class="btn btn--primary">Zamów audyt</a>
+          <a href="/cennik/" class="btn btn--secondary">Zobacz cennik</a>
+        </div>
+        <WelcomeAudio />
+        <ul class="hero__facts">
+          <li><Icon name="check" size={18} /> 3 miesiące na start, potem miesiąc wypowiedzenia</li>
+          <li><Icon name="check" size={18} /> Godziny eksperta w każdym raporcie</li>
+          <li><Icon name="check" size={18} /> Zdalnie w całej Polsce</li>
+        </ul>
+      </div>
+
+      <div class="hero__visual">
+        <HeroVideo />
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem → solution -->
+  <section class="section section--alt" aria-labelledby="problem-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Znasz to?</span>
+        <h2 id="problem-title">SEO, które wygląda dobrze w raporcie, ale nie przynosi zapytań</h2>
+        <p>Firmy B2B często płacą za pozycjonowanie, nie wiedząc, kto nad nim pracuje i co z tego mają. Robię to inaczej.</p>
+      </div>
+      <div class="ps">
+        <div class="ps__head" aria-hidden="true">
+          <span>Typowa współpraca</span>
+          <span>Współpraca z Krasnal SEO</span>
+        </div>
+        <ul class="ps__list">
+          {
+            problems.map((p) => (
+              <li class="ps__row">
+                <p class="ps__problem">
+                  <span class="visually-hidden">Problem: </span>
+                  {p.problem}
+                </p>
+                <p class="ps__solution">
+                  <span class="visually-hidden">Rozwiązanie: </span>
+                  {p.solution}
+                </p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section" aria-labelledby="steps-title">
+    <div class="container">
+      <div class="split split--reverse steps-intro">
+        <div class="steps-intro__art"><DwarfMark size={200} /></div>
+        <div class="section-head">
+          <span class="eyebrow">Jak pracuję</span>
+          <h2 id="steps-title">Cztery kroki od diagnozy do stałego wzrostu</h2>
+          <p>Bez rewolucji na start. Najpierw zmiany o największym wpływie, potem systematyczna praca miesiąc po miesiącu.</p>
+        </div>
+      </div>
+      <ol class="steps">
+        {
+          steps.map((s, i) => (
+            <li class="card step">
+              <span class="step__num" aria-hidden="true">0{i + 1}</span>
+              <div class="icon-badge">
+                <Icon name={s.icon} />
+              </div>
+              <h3>{s.title}</h3>
+              <p class="muted">{s.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- Differentiators -->
+  <section class="section section--alt" aria-labelledby="diff-title">
+    <div class="container">
+      <div class="section-head section-head--center">
+        <span class="eyebrow">Dlaczego Krasnal SEO</span>
+        <h2 id="diff-title">Senior SEO, z którym pracujesz bezpośrednio</h2>
+      </div>
+      <div class="grid grid--3">
+        {
+          differentiators.map((d) => (
+            <article class="card">
+              <div class="icon-badge">
+                <Icon name={d.icon} />
+              </div>
+              <h3>{d.title}</h3>
+              <p class="muted">{d.text}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing teaser -->
+  <section class="section" aria-labelledby="pricing-title">
+    <div class="container">
+      <div class="section-head section-head--center">
+        <span class="eyebrow">Cennik</span>
+        <h2 id="pricing-title">Jasne pakiety, w których widać godziny eksperta</h2>
+        <p>Ceny netto. Budżety na treści i linki zawsze osobno i za Twoją akceptacją.</p>
+      </div>
+      <PackageCards compact />
+      <div class="pricing-teaser__foot">
+        <p>
+          Wolisz zacząć od diagnozy? <strong>{audit.name}</strong> za {formatPLN(audit.priceNet)} netto –
+          {Math.round(auditCredit.rate * 100)}% ceny zaliczam na poczet abonamentu.
+        </p>
+        <div class="btn-row">
+          <a href="/cennik/" class="btn btn--dark">Pełny cennik i kalkulator</a>
+          <a href="/audyt-seo/" class="btn btn--secondary">Szczegóły audytu</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Case studies teaser -->
+  <section class="section section--alt" aria-labelledby="cases-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Case studies</span>
+        <h2 id="cases-title">Jak wygląda praca nad SEO w firmach B2B</h2>
+        <p>Opisy są zanonimizowane. Mierzę to, co ważne dla sprzedaży: zapytania i ruch non-brand.</p>
+      </div>
+      <div class="grid grid--3">
+        {caseStudies.slice(0, 3).map((study) => <CaseStudyCard study={study} />)}
+      </div>
+      <p class="section-more"><a href="/case-studies/">Wszystkie case studies</a></p>
+    </div>
+  </section>
+
+  <!-- About teaser -->
+  <section class="section" aria-labelledby="about-title">
+    <div class="container split">
+      <div>
+        <span class="eyebrow">O mnie</span>
+        <h2 id="about-title">Cześć, jestem Paweł – i to ja będę pracował nad Twoim SEO</h2>
+        <p class="lead">
+          Jestem konsultantem SEO z Wrocławia. Pracuję z firmami B2B, które chcą pozyskiwać klientów z Google, a nie
+          tylko oglądać wykresy widoczności.
+        </p>
+        <p class="muted">
+          Łączę techniczne SEO, strategię treści i digital PR. Rozmawiam z Twoim zespołem sprzedaży, żeby zrozumieć, jakie
+          zapytania mają wartość – i na nich skupiam pracę.
+        </p>
+        <a href="/o-mnie/" class="btn btn--secondary">Poznaj moje podejście</a>
+      </div>
+      <div class="photo-placeholder" role="img" aria-label="Miejsce na zdjęcie konsultanta">
+        <DwarfMark size={140} />
+        <span>[TODO: zdjęcie]</span>
+      </div>
+    </div>
+  </section>
+
+  <Testimonials />
+
+  <!-- FAQ -->
+  <section class="section section--alt" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head section-head--center">
+        <span class="eyebrow">FAQ</span>
+        <h2 id="faq-title">Najczęstsze pytania</h2>
+      </div>
+      <Faq items={homeFaq} center />
+      <p class="section-more section-more--center">Pytania o ceny i umowę? <a href="/cennik/#faq">Zobacz FAQ cennika</a></p>
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-block: clamp(2.5rem, 1.5rem + 4vw, 5.5rem);
+    background:
+      radial-gradient(circle at 85% 20%, rgb(238 154 42 / 0.12), transparent 40%),
+      linear-gradient(180deg, var(--surface-alt), #fff 85%);
+    overflow: hidden;
+  }
+  .hero__grid {
+    display: grid;
+    gap: var(--s-7);
+    align-items: center;
+  }
+  @media (min-width: 960px) {
+    .hero__grid {
+      grid-template-columns: 1fr 1.05fr;
+    }
+  }
+  .hero h1 {
+    max-width: 14ch;
+    margin-bottom: var(--s-3);
+  }
+  .hero__sub {
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    color: var(--teal-600);
+    margin-bottom: var(--s-4);
+  }
+  .hero .lead {
+    max-width: 56ch;
+    margin-bottom: var(--s-5);
+  }
+  .hero__facts {
+    list-style: none;
+    padding: 0;
+    margin: var(--s-5) 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-5);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--ink-muted);
+  }
+  .hero__facts li {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+  .hero__facts :global(svg) {
+    color: var(--success);
+  }
+  .hero__visual {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ps {
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .ps__head {
+    display: none;
+  }
+  .ps__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .ps__row {
+    display: grid;
+    border-top: 1px solid var(--line);
+  }
+  .ps__row:first-child {
+    border-top: 0;
+  }
+  .ps__row p {
+    margin: 0;
+    padding: var(--s-4) var(--s-5) var(--s-4) 3rem;
+    position: relative;
+  }
+  .ps__problem {
+    color: var(--ink-muted);
+  }
+  .ps__problem::before,
+  .ps__solution::before {
+    position: absolute;
+    left: var(--s-4);
+    top: var(--s-4);
+    font-weight: 800;
+  }
+  .ps__problem::before {
+    content: '×';
+    color: var(--danger);
+    font-size: 1.2em;
+    line-height: 1.4;
+  }
+  .ps__solution {
+    background: #f3faf6;
+    color: var(--navy-800);
+    font-weight: 600;
+  }
+  .ps__solution::before {
+    content: '✓';
+    color: var(--success);
+  }
+  @media (min-width: 800px) {
+    .ps__head {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      font-weight: 800;
+      font-size: var(--fs-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .ps__head span {
+      padding: var(--s-4) var(--s-5);
+      color: var(--ink-muted);
+    }
+    .ps__head span + span {
+      background: #f3faf6;
+      color: var(--success);
+    }
+    .ps__row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .steps-intro {
+    margin-bottom: var(--s-6);
+  }
+  .steps-intro .section-head {
+    margin-bottom: 0;
+  }
+  .steps-intro__art {
+    display: none;
+  }
+  @media (min-width: 900px) {
+    .steps-intro {
+      grid-template-columns: 1.6fr 1fr;
+    }
+    .steps-intro__art {
+      display: flex;
+      justify-content: center;
+      order: 2;
+    }
+  }
+  .steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--s-5);
+    counter-reset: step;
+  }
+  @media (min-width: 720px) {
+    .steps {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1100px) {
+    .steps {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .step {
+    position: relative;
+  }
+  .step__num {
+    position: absolute;
+    top: var(--s-5);
+    right: var(--s-5);
+    font-size: var(--fs-2xl);
+    font-weight: 800;
+    color: #76839a;
+    line-height: 1;
+  }
+
+  .pricing-teaser__foot {
+    display: grid;
+    gap: var(--s-4);
+    justify-items: center;
+    text-align: center;
+    margin-top: var(--s-7);
+  }
+  .pricing-teaser__foot p {
+    margin: 0;
+    max-width: 60ch;
+  }
+  .section-more {
+    margin: var(--s-6) 0 0;
+    font-weight: 700;
+  }
+  .section-more--center {
+    text-align: center;
+  }
+</style>

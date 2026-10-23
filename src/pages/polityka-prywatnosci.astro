@@ -1,0 +1,95 @@
+---
+/**
+ * Privacy policy TEMPLATE. Must be reviewed by the owner (ideally a lawyer) before launch.
+ * [TODO] markers are filled from src/config/site.ts where possible.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site, orTodo } from '../config/site';
+
+const controller = `${site.legalName}, ${orTodo(site.address.street, 'ulica i numer')}, ${orTodo(site.address.postalCode, 'kod')} ${site.address.city}, NIP ${orTodo(site.nip, 'NIP')}`;
+const email = orTodo(site.email, 'e-mail');
+---
+
+<BaseLayout
+  title="Polityka prywatności"
+  description="Polityka prywatności serwisu Krasnal SEO: administrator danych, cele i podstawy przetwarzania, formularz kontaktowy, analityka i pliki cookies."
+  path="/polityka-prywatnosci/"
+  breadcrumbs={[{ name: 'Polityka prywatności', path: '/polityka-prywatnosci/' }]}
+>
+  <section class="section section--tight">
+    <div class="container prose">
+      <h1>Polityka prywatności</h1>
+      <p class="muted">Obowiązuje od: <span class="todo">[TODO: data]</span></p>
+
+      <h2>1. Administrator danych</h2>
+      <p>Administratorem Twoich danych osobowych jest {controller} (dalej: „Administrator”). Kontakt w sprawach danych osobowych: {email}.</p>
+
+      <h2>2. Jakie dane przetwarzam i w jakim celu</h2>
+      <h3>Formularz kontaktowy i zamówienie audytu</h3>
+      <p>
+        Gdy wysyłasz formularz, przetwarzam podane dane: imię i nazwisko, nazwę firmy, adres strony www, adres e-mail,
+        numer telefonu (jeśli go podasz), deklarowany budżet, treść wiadomości oraz wybraną konfigurację z kalkulatora.
+      </p>
+      <ul>
+        <li>w celu odpowiedzi na zapytanie i przygotowania oferty – na podstawie art. 6 ust. 1 lit. b RODO (działania przed zawarciem umowy) oraz lit. f (prawnie uzasadniony interes: komunikacja z osobami kontaktującymi się w imieniu firm);</li>
+        <li>w celu ustalenia, dochodzenia lub obrony roszczeń – art. 6 ust. 1 lit. f RODO.</li>
+      </ul>
+      <p>Podanie danych jest dobrowolne, ale niezbędne do udzielenia odpowiedzi.</p>
+
+      <h3>Rezerwacja terminu rozmowy</h3>
+      <p>
+        Jeśli skorzystasz z kalendarza rezerwacji, dane podane w kalendarzu przetwarza także jego dostawca
+        <span class="todo">[TODO: Cal.com / Calendly]</span> jako podmiot przetwarzający. Kalendarz ładuje się dopiero po kliknięciu.
+      </p>
+
+      <h2 id="cookies">3. Pliki cookies i analityka</h2>
+      <p>
+        Serwis działa bez analitycznych plików cookies. Za Twoją zgodą (art. 6 ust. 1 lit. a RODO) używam Google
+        Analytics 4 (dostawca: Google Ireland Ltd.) w trybie Google Consent Mode v2, aby mierzyć ruch i skuteczność
+        treści. Do momentu wyrażenia zgody skrypt Google Analytics nie jest ładowany.
+      </p>
+      <ul>
+        <li>Niezbędne: zapis Twojego wyboru dotyczącego cookies w pamięci przeglądarki (localStorage).</li>
+        <li>Analityczne (tylko po zgodzie): pliki <code>_ga</code>, <code>_ga_*</code> – przechowywane do 14 miesięcy <span class="todo">[TODO: potwierdzić okres retencji w GA4]</span>.</li>
+      </ul>
+      <p>
+        Zgodę możesz w każdej chwili zmienić lub wycofać przyciskiem „Ustawienia cookies” w stopce strony. Wycofanie zgody nie
+        wpływa na zgodność z prawem przetwarzania przed jej wycofaniem.
+      </p>
+
+      <h2>4. Odbiorcy danych</h2>
+      <p>
+        Dane mogą być przekazywane podmiotom, które wspierają mnie w prowadzeniu działalności: dostawcy hostingu i poczty
+        e-mail <span class="todo">[TODO: nazwa dostawcy]</span>, dostawca formularza <span class="todo">[TODO: jeśli używasz Formspree lub podobnej usługi]</span>,
+        biuro rachunkowe, a w zakresie analityki – Google. W przypadku Google dane mogą być przekazywane poza EOG na podstawie
+        decyzji Komisji Europejskiej (EU-U.S. Data Privacy Framework) lub standardowych klauzul umownych.
+      </p>
+
+      <h2>5. Jak długo przechowuję dane</h2>
+      <ul>
+        <li>dane z formularza – przez czas potrzebny do obsługi zapytania, a jeśli nie dojdzie do współpracy, nie dłużej niż <span class="todo">[TODO: np. 12 miesięcy]</span>;</li>
+        <li>jeśli zawrzemy umowę – przez okres jej trwania oraz wymagany przepisami podatkowymi i okres przedawnienia roszczeń;</li>
+        <li>dane analityczne – zgodnie z ustawieniami retencji w GA4.</li>
+      </ul>
+
+      <h2>6. Twoje prawa</h2>
+      <p>
+        Masz prawo dostępu do danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia, wniesienia
+        sprzeciwu wobec przetwarzania opartego na prawnie uzasadnionym interesie oraz cofnięcia zgody. Masz także prawo
+        wnieść skargę do Prezesa Urzędu Ochrony Danych Osobowych (ul. Stawki 2, 00-193 Warszawa).
+      </p>
+      <p>Aby skorzystać z praw, napisz na adres: {email}.</p>
+
+      <h2>7. Zautomatyzowane decyzje</h2>
+      <p>Nie podejmuję decyzji w sposób zautomatyzowany, w tym nie stosuję profilowania wywołującego skutki prawne.</p>
+
+      <h2>8. Zmiany polityki</h2>
+      <p>O istotnych zmianach poinformuję na tej stronie, aktualizując datę obowiązywania.</p>
+
+      <p class="note small">
+        <span class="todo">[TODO]</span> Ten dokument jest szablonem. Przed publikacją uzupełnij dane i zweryfikuj treść z
+        prawnikiem.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

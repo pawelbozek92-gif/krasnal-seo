@@ -1,0 +1,82 @@
+---
+/** Netto/brutto switch. Rendered only when site.vatPayer is true. */
+import { site } from '../../config/site';
+const pct = Math.round(site.vatRate * 100);
+---
+
+{
+  site.vatPayer ? (
+    <fieldset class="vat-toggle">
+      <legend class="visually-hidden">Sposób prezentacji cen</legend>
+      <label>
+        <input type="radio" name="vat-mode" value="net" checked />
+        <span>Netto</span>
+      </label>
+      <label>
+        <input type="radio" name="vat-mode" value="gross" />
+        <span>Brutto</span>
+      </label>
+      <span class="vat-toggle__note" data-vat-long>
+        Ceny netto + {pct}% VAT.
+      </span>
+    </fieldset>
+  ) : (
+    <p class="vat-toggle__note">Ceny końcowe – zwolniony z VAT.</p>
+  )
+}
+
+<script>
+  import { setVatMode, type VatMode } from '../../scripts/vat';
+  document.addEventListener('change', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t.name === 'vat-mode') setVatMode(t.value as VatMode);
+  });
+</script>
+
+<style>
+  .vat-toggle {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-1);
+    margin: 0;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+  }
+  .vat-toggle label {
+    position: relative;
+  }
+  .vat-toggle input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+  .vat-toggle span {
+    display: block;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: var(--fs-sm);
+    color: var(--navy-800);
+  }
+  .vat-toggle input:checked + span {
+    background: var(--navy-800);
+    color: #fff;
+  }
+  .vat-toggle input:focus-visible + span {
+    box-shadow: var(--focus);
+  }
+  .vat-toggle .vat-toggle__note {
+    font-weight: 600;
+    color: var(--ink-muted);
+    padding-inline: 0.6rem;
+  }
+  p.vat-toggle__note {
+    font-weight: 700;
+    color: var(--ink-muted);
+  }
+</style>

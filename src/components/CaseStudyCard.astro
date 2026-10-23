@@ -1,0 +1,87 @@
+---
+import type { CaseStudy } from '../data/case-studies';
+import ExampleBadge from './ExampleBadge.astro';
+
+export interface Props {
+  study: CaseStudy;
+  headingLevel?: 'h2' | 'h3';
+}
+const { study, headingLevel: H = 'h3' } = Astro.props;
+const highlight = study.results[0];
+---
+
+<article class="card case-card">
+  {study.isExample && <ExampleBadge />}
+  <p class="case-card__industry">{study.industryLabel}</p>
+  <H class="case-card__title">
+    <a href={`/case-studies/${study.slug}/`}>{study.title}</a>
+  </H>
+  {
+    highlight && (
+      <p class="case-card__metric">
+        <span class="muted small">{highlight.metric}</span>
+        <strong>
+          {highlight.before} → {highlight.after}
+        </strong>
+        <span class="muted small">w {highlight.period}</span>
+      </p>
+    )
+  }
+  <p class="muted small">{study.servicesUsed.join(' · ')}</p>
+</article>
+
+<style>
+  .case-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+  .case-card :global(.badge) {
+    align-self: flex-start;
+  }
+  .case-card__industry {
+    margin: var(--s-2) 0 0;
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: var(--orange-700);
+  }
+  .case-card__title a {
+    color: var(--navy-800);
+    text-decoration: none;
+  }
+  .case-card__title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+  }
+  .case-card {
+    transition:
+      border-color var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-base) var(--ease-out),
+      transform var(--dur-base) var(--ease-out);
+  }
+  .case-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow);
+  }
+  .case-card:focus-within {
+    box-shadow: var(--focus);
+  }
+  .case-card__title a:focus-visible {
+    box-shadow: none;
+  }
+  .case-card__metric {
+    display: grid;
+    gap: 2px;
+    padding: var(--s-3) var(--s-4);
+    background: var(--surface-alt);
+    border-radius: var(--radius-sm);
+  }
+  .case-card__metric strong {
+    font-size: var(--fs-xl);
+    color: var(--navy-800);
+  }
+</style>

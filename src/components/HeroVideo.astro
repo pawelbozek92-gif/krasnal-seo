@@ -1,0 +1,157 @@
+---
+/**
+ * Framed 16:9 hero animation. The headline stays the LCP element:
+ * sources are attached only after the load event (idle time), and only one
+ * rendition (desktop or mobile, WebM or MP4) is downloaded.
+ * prefers-reduced-motion → static payoff frame, no video.
+ * Settings: src/data/motion.ts
+ */
+import { hero } from '../data/motion';
+import { withBase } from '../lib/url';
+
+const sources = {
+  desktop: { webm: withBase(hero.sources.desktop.webm), mp4: withBase(hero.sources.desktop.mp4) },
+  mobile: { webm: withBase(hero.sources.mobile.webm), mp4: withBase(hero.sources.mobile.mp4) },
+};
+---
+
+<figure class="hero-video">
+  <div class="hero-video__frame">
+    <video
+      class="hero-video__media"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      poster={withBase(hero.poster)}
+      width={hero.width}
+      height={hero.height}
+      aria-hidden="true"
+      tabindex="-1"
+      disablepictureinpicture
+      data-hero-video
+      data-sources={JSON.stringify(sources)}
+      data-breakpoint={hero.mobileBreakpoint}></video>
+    <img
+      class="hero-video__static"
+      src={withBase(hero.staticImage)}
+      alt=""
+      width={hero.width}
+      height={hero.height}
+      loading="lazy"
+      decoding="async"
+    />
+  </div>
+  <figcaption class="visually-hidden">{hero.description}</figcaption>
+</figure>
+
+<script>
+  const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+  if (video) {
+    type Set = { webm: string; mp4: string };
+    const sources = JSON.parse(video.dataset.sources!) as { desktop: Set; mobile: Set };
+    const breakpoint = Number(video.dataset.breakpoint);
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let started = false;
+    let inView = true;
+
+    const play = () => {
+      if (!started || !inView || document.hidden || reduce.matches) return;
+      video.play().catch(() => {
+        /* autoplay refused (e.g. Low Power Mode) – poster stays visible */
+      });
+    };
+
+    // Attach exactly one rendition: WebM first, MP4 fallback, picked by viewport width.
+    const start = () => {
+      if (started || reduce.matches) return;
+      started = true;
+      const set = window.innerWidth < breakpoint ? sources.mobile : sources.desktop;
+      for (const [type, src] of [
+        ['video/webm; codecs="vp9"', set.webm],
+        ['video/mp4', set.mp4],
+      ]) {
+        const s = document.createElement('source');
+        s.src = src;
+        s.type = type;
+        video.append(s);
+      }
+      video.load();
+      play();
+    };
+
+    const startWhenIdle = () =>
+      'requestIdleCallback' in window ? window.requestIdleCallback(start, { timeout: 2500 }) : window.setTimeout(start, 300);
+    if (document.readyState === 'complete') startWhenIdle();
+    else window.addEventListener('load', startWhenIdle, { once: true });
+
+    // Pause off-screen and in background tabs.
+    new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      if (inView) play();
+      else video.pause();
+    }).observe(video);
+    document.addEventListener('visibilitychange', () => (document.hidden ? video.pause() : play()));
+    reduce.addEventListener('change', () => (reduce.matches ? video.pause() : (start(), play())));
+
+    // The welcome greeting restarts the animation so the bar rises while the voice speaks.
+    document.addEventListener('krasnal:welcome-play', () => {
+      if (reduce.matches) return;
+      start();
+      try {
+        video.currentTime = 0;
+      } catch {
+        /* metadata not loaded yet – playback starts at 0 anyway */
+      }
+      play();
+    });
+  }
+</script>
+
+<style>
+  .hero-video {
+    margin: 0;
+    width: 100%;
+  }
+  .hero-video__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--video-navy);
+    box-shadow:
+      0 0 0 1px rgb(13 43 70 / 0.08),
+      0 24px 60px -24px rgb(13 43 70 / 0.55),
+      0 0 70px -10px rgb(238 154 42 / 0.35);
+    isolation: isolate;
+  }
+  /* Soft vignette so the video's navy melts into the frame edges. */
+  .hero-video__frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 62%, rgb(8 15 38 / 0.55) 100%);
+    border-radius: inherit;
+  }
+  .hero-video__media,
+  .hero-video__static {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .hero-video__static {
+    display: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-video__media {
+      display: none;
+    }
+    .hero-video__static {
+      display: block;
+    }
+  }
+</style>

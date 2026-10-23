@@ -1,0 +1,76 @@
+---
+import Logo from './Logo.astro';
+
+export interface Props {
+  path: string;
+}
+const { path } = Astro.props;
+
+const navItems = [
+  { href: '/cennik/', label: 'Cennik' },
+  { href: '/audyt-seo/', label: 'Audyt SEO' },
+  { href: '/case-studies/', label: 'Case studies' },
+  { href: '/o-mnie/', label: 'O mnie' },
+  { href: '/kontakt/', label: 'Kontakt' },
+];
+const isCurrent = (href: string) => path === href || (href !== '/' && path.startsWith(href));
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a href="/" class="site-header__logo" aria-label="Krasnal SEO – strona główna">
+      <Logo height={46} eager />
+    </a>
+    <div class="site-header__actions">
+      <a href="/audyt-seo/" class="btn btn--primary site-header__mobile-cta">Zamów audyt</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
+        <span class="visually-hidden" data-nav-label>Otwórz menu</span>
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M4 7h16M4 12h16M4 17h16" data-icon-open></path>
+          <path d="M6 6l12 12M18 6L6 18" data-icon-close hidden></path>
+        </svg>
+      </button>
+      <nav class="site-nav" id="site-nav" aria-label="Główna nawigacja">
+        <ul class="site-nav__list">
+          {
+            navItems.map((item) => (
+              <li>
+                <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <a href="/audyt-seo/" class="btn btn--primary site-header__cta">Zamów audyt</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const nav = document.getElementById('site-nav');
+  if (toggle && nav) {
+    const label = toggle.querySelector('[data-nav-label]')!;
+    const iconOpen = toggle.querySelector('[data-icon-open]')!;
+    const iconClose = toggle.querySelector('[data-icon-close]')!;
+    const setOpen = (open: boolean) => {
+      nav.classList.toggle('is-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      label.textContent = open ? 'Zamknij menu' : 'Otwórz menu';
+      iconOpen.toggleAttribute('hidden', open);
+      iconClose.toggleAttribute('hidden', !open);
+    };
+    toggle.addEventListener('click', () => setOpen(!nav.classList.contains('is-open')));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && nav.classList.contains('is-open')) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+    nav.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) setOpen(false);
+    });
+  }
+</script>

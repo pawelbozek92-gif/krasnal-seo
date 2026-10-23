@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DwarfMark from '../components/DwarfMark.astro';
+---
+
+<BaseLayout
+  title="Nie znaleziono strony (404)"
+  description="Ta strona nie istnieje. Wróć na stronę główną Krasnal SEO lub sprawdź cennik."
+  path="/404/"
+  noindex
+>
+  <section class="section">
+    <div class="container status-page">
+      <DwarfMark size={170} />
+      <p class="eyebrow">Błąd 404</p>
+      <h1>Krasnal szukał wszędzie – tej strony nie ma</h1>
+      <p class="lead">Adres mógł się zmienić albo zawiera literówkę. Te strony na pewno istnieją:</p>
+      <div class="btn-row">
+        <a href="/" class="btn btn--primary">Strona główna</a>
+        <a href="/cennik/" class="btn btn--secondary">Cennik</a>
+        <a href="/audyt-seo/" class="btn btn--secondary">Audyt SEO</a>
+        <a href="/kontakt/" class="btn btn--secondary">Kontakt</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

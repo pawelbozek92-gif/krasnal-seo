@@ -1,0 +1,140 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ExampleBadge from '../../components/ExampleBadge.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { caseStudies, type CaseStudy } from '../../data/case-studies';
+
+export function getStaticPaths() {
+  return caseStudies.map((study) => ({ params: { slug: study.slug }, props: { study } }));
+}
+
+const { study } = Astro.props as { study: CaseStudy };
+const path = `/case-studies/${study.slug}/`;
+if (study.isExample) console.warn(`[case-studies] Rendering example entry (noindex): ${study.slug}`);
+---
+
+<BaseLayout
+  title={study.title}
+  description={`${study.industryLabel}: ${study.challenge.slice(0, 100)}…`}
+  path={path}
+  noindex={study.isExample}
+  breadcrumbs={[
+    { name: 'Case studies', path: '/case-studies/' },
+    { name: study.industryLabel, path },
+  ]}
+>
+  <article>
+    <header class="page-hero">
+      <div class="container">
+        {study.isExample && <ExampleBadge />}
+        <p class="eyebrow cs-industry">{study.industryLabel}</p>
+        <h1>{study.title}</h1>
+        <dl class="cs-meta">
+          <div><dt>Czas współpracy</dt><dd>{study.timeframe}</dd></div>
+          <div><dt>Usługi</dt><dd>{study.servicesUsed.join(', ')}</dd></div>
+        </dl>
+        {
+          study.isExample && (
+            <p class="note small">
+              To przykładowy scenariusz pokazujący układ case study. Liczby są ilustracyjne i nie opisują rzeczywistego
+              klienta. Treść zostanie zastąpiona prawdziwymi, zanonimizowanymi wynikami.
+            </p>
+          )
+        }
+      </div>
+    </header>
+
+    <section class="section section--tight" aria-labelledby="cs-results">
+      <div class="container">
+        <h2 id="cs-results">Wyniki</h2>
+        <div class="grid grid--3">
+          {
+            study.results.map((r) => (
+              <div class="card cs-result">
+                <p class="cs-result__metric">{r.metric}</p>
+                <p class="cs-result__values">
+                  <span class="muted">{r.before}</span>
+                  <span aria-hidden="true">→</span>
+                  <span class="visually-hidden">wzrost do</span>
+                  <strong>{r.after}</strong>
+                </p>
+                <p class="small muted">w ciągu {r.period}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--alt">
+      <div class="container split cs-body">
+        <div>
+          <h2>Wyzwanie</h2>
+          <p>{study.challenge}</p>
+        </div>
+        <div>
+          <h2>Co zrobiliśmy</h2>
+          <ul class="check-list">
+            {study.whatWeDid.map((item) => <li>{item}</li>)}
+          </ul>
+        </div>
+      </div>
+    </section>
+  </article>
+
+  <div class="container cs-back">
+    <a href="/case-studies/">← Wszystkie case studies</a>
+  </div>
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .cs-industry {
+    display: block;
+    margin-top: var(--s-4);
+  }
+  .cs-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3) var(--s-7);
+    margin: var(--s-5) 0;
+  }
+  .cs-meta dt {
+    font-size: var(--fs-xs);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+  }
+  .cs-meta dd {
+    margin: 0;
+    font-weight: 700;
+  }
+  .cs-result__metric {
+    font-weight: 700;
+    margin-bottom: var(--s-2);
+  }
+  .cs-result__values {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-3);
+    font-size: var(--fs-2xl);
+    font-weight: 800;
+    margin-bottom: var(--s-1);
+  }
+  .cs-result__values strong {
+    color: var(--teal-600);
+  }
+  .cs-body {
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    .cs-body {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .cs-back {
+    padding-top: var(--s-6);
+    font-weight: 700;
+  }
+</style>

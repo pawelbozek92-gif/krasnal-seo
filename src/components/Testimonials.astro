@@ -1,0 +1,30 @@
+---
+/** Renders nothing until real, approved quotes exist in src/data/testimonials.ts. */
+import { testimonials } from '../data/testimonials';
+---
+
+{
+  testimonials.length > 0 && (
+    <section class="section" aria-labelledby="testimonials-title">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Opinie</span>
+          <h2 id="testimonials-title">Co mówią klienci</h2>
+        </div>
+        <div class="grid grid--3">
+          {testimonials.map((t) => (
+            <figure class="card">
+              <blockquote>
+                <p>„{t.quote}”</p>
+              </blockquote>
+              <figcaption class="muted small">
+                {t.role}
+                {t.company && `, ${t.company}`}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

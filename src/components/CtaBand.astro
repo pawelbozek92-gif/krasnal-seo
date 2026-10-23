@@ -1,0 +1,23 @@
+---
+export interface Props {
+  title?: string;
+  text?: string;
+}
+const {
+  title = 'Sprawdźmy, ile Twoja firma może zyskać z Google',
+  text = 'Na bezpłatnej, 30-minutowej rozmowie omówimy Twój serwis, cele sprzedażowe i realny zakres prac. Bez zobowiązań i bez prezentacji sprzedażowej.',
+} = Astro.props;
+---
+
+<section class="section section--tight" aria-labelledby="cta-band-title">
+  <div class="container">
+    <div class="cta-band">
+      <h2 id="cta-band-title">{title}</h2>
+      <p>{text}</p>
+      <div class="btn-row">
+        <a href="/kontakt/" class="btn btn--primary">Umów bezpłatną rozmowę</a>
+        <a href="/audyt-seo/" class="btn btn--ghost-light">Zamów audyt SEO</a>
+      </div>
+    </div>
+  </div>
+</section>

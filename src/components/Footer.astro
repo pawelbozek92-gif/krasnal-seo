@@ -1,0 +1,55 @@
+---
+import Logo from './Logo.astro';
+import { site, isSet, orTodo } from '../config/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="site-footer__grid">
+      <div>
+        <a href="/" class="site-footer__logo" aria-label="Krasnal SEO – strona główna"><Logo height={52} /></a>
+        <p class="muted">
+          Małe zmiany, duże wyniki w Google.<br />SEO z Wrocławia dla firm B2B z całej Polski.
+        </p>
+      </div>
+      <nav aria-labelledby="footer-offer">
+        <h2 id="footer-offer">Oferta</h2>
+        <ul>
+          <li><a href="/cennik/">Cennik i kalkulator</a></li>
+          <li><a href="/audyt-seo/">Audyt SEO</a></li>
+          <li><a href="/konsultant-seo-wroclaw/">Konsultant SEO Wrocław</a></li>
+          <li><a href="/case-studies/">Case studies</a></li>
+        </ul>
+      </nav>
+      <nav aria-labelledby="footer-company">
+        <h2 id="footer-company">Firma</h2>
+        <ul>
+          <li><a href="/o-mnie/">O mnie</a></li>
+          <li><a href="/kontakt/">Kontakt</a></li>
+          <li><a href="/polityka-prywatnosci/">Polityka prywatności</a></li>
+          {isSet(site.linkedinUrl) ? <li><a href={site.linkedinUrl} rel="me noopener" target="_blank">LinkedIn</a></li> : <li><span class="todo">[TODO: LinkedIn]</span></li>}
+        </ul>
+      </nav>
+      <div>
+        <h2>Dane firmy</h2>
+        <address>
+          <span><strong>{site.legalName}</strong></span>
+          <span>NIP: {orTodo(site.nip, 'NIP')}</span>
+          <span>{orTodo(site.address.street, 'ulica i numer')}, {orTodo(site.address.postalCode, 'kod')} {site.address.city}</span>
+          <span>{isSet(site.email) ? <a href={`mailto:${site.email}`}>{site.email}</a> : orTodo(site.email, 'e-mail')}</span>
+          <span>{isSet(site.phone) ? <a href={`tel:${site.phone.replace(/\s/g, '')}`}>{site.phone}</a> : orTodo(site.phone, 'telefon')}</span>
+        </address>
+      </div>
+    </div>
+    <div class="site-footer__bottom">
+      <span>© {year} {site.legalName}</span>
+      <span>
+        <a href="/polityka-prywatnosci/">Polityka prywatności</a>
+        &nbsp;·&nbsp;
+        <button type="button" class="link-button" data-cookie-settings>Ustawienia cookies</button>
+      </span>
+    </div>
+  </div>
+</footer>

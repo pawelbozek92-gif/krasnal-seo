@@ -1,0 +1,146 @@
+---
+/** Full comparison of package inclusions. Collapsed on mobile, opened on wide screens by JS. */
+import Icon from '../Icon.astro';
+import { packages, comparisonRows } from '../../data/pricing';
+import { formatPLN } from '../../lib/format';
+---
+
+<details class="compare" data-compare>
+  <summary class="compare__toggle">
+    <span>Porównaj wszystkie pakiety</span>
+  </summary>
+  <div class="compare__scroll" role="region" aria-label="Tabela porównania pakietów" tabindex="0">
+    <table class="compare__table">
+      <caption class="visually-hidden">Porównanie zakresu pakietów START, GROWTH i SCALE</caption>
+      <thead>
+        <tr>
+          <th scope="col">Zakres</th>
+          {
+            packages.map((p) => (
+              <th scope="col" class:list={{ 'is-highlight': p.highlight }}>
+                {p.name}
+                <span class="compare__price">
+                  <span data-price-net={p.priceNet}>{formatPLN(p.priceNet)}</span> / mies.
+                </span>
+              </th>
+            ))
+          }
+        </tr>
+      </thead>
+      <tbody>
+        {
+          comparisonRows.map((row) => (
+            <tr>
+              <th scope="row">{row.label}</th>
+              {packages.map((p) => {
+                const v = row.values[p.id];
+                return (
+                  <td class:list={{ 'is-highlight': p.highlight }}>
+                    {v === true ? (
+                      <>
+                        <Icon name="check" size={20} class="compare__yes" />
+                        <span class="visually-hidden">tak</span>
+                      </>
+                    ) : v === false ? (
+                      <>
+                        <span aria-hidden="true" class="compare__no">–</span>
+                        <span class="visually-hidden">nie</span>
+                      </>
+                    ) : (
+                      v
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+</details>
+
+<script>
+  const compare = document.querySelector<HTMLDetailsElement>('[data-compare]');
+  if (compare && window.matchMedia('(min-width: 900px)').matches) compare.open = true;
+</script>
+
+<style>
+  .compare {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #fff;
+  }
+  .compare__toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--s-4) var(--s-5);
+    font-weight: 800;
+    font-size: var(--fs-lg);
+    color: var(--navy-800);
+    cursor: pointer;
+    list-style: none;
+    border-radius: var(--radius);
+  }
+  .compare__toggle::-webkit-details-marker {
+    display: none;
+  }
+  .compare__toggle::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-right: 2.5px solid var(--orange-700);
+    border-bottom: 2.5px solid var(--orange-700);
+    transform: rotate(45deg) translateY(-3px);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .compare[open] .compare__toggle::after {
+    transform: rotate(-135deg) translateY(-3px);
+  }
+  .compare__scroll {
+    overflow-x: auto;
+    padding: 0 var(--s-2) var(--s-4);
+  }
+  .compare__table {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+  }
+  .compare__table th,
+  .compare__table td {
+    padding: var(--s-3);
+    border-bottom: 1px solid var(--line);
+    text-align: center;
+    vertical-align: middle;
+  }
+  .compare__table th[scope='row'],
+  .compare__table thead th:first-child {
+    text-align: left;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .compare__table thead th {
+    font-weight: 800;
+    color: var(--navy-800);
+    letter-spacing: 0.06em;
+  }
+  .compare__price {
+    display: block;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--ink-muted);
+  }
+  .compare__table .is-highlight {
+    background: #fff8ee;
+  }
+  .compare__table :global(.compare__yes) {
+    display: inline-block;
+    color: var(--success);
+  }
+  .compare__no {
+    color: var(--line-strong);
+    font-weight: 800;
+  }
+</style>

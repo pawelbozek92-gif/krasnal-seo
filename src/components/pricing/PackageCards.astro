@@ -1,0 +1,126 @@
+---
+import Icon from '../Icon.astro';
+import { packages } from '../../data/pricing';
+import { site } from '../../config/site';
+import { formatPLN } from '../../lib/format';
+
+export interface Props {
+  /** Teaser variant: no inclusion list. */
+  compact?: boolean;
+}
+const { compact = false } = Astro.props;
+const vatLabel = site.vatPayer ? 'netto' : 'zw. z VAT';
+---
+
+<div class="grid grid--3 package-grid">
+  {
+    packages.map((p) => (
+      <article class:list={['card', 'price-card', { 'price-card--highlight': p.highlight }]} id={`pakiet-${p.id}`}>
+        {p.highlight && <span class="badge badge--popular price-card__flag">Najczęściej wybierany</span>}
+        <h3 class="price-card__name">{p.name}</h3>
+        <p class="muted price-card__tagline">{p.tagline}</p>
+        <p class="price-card__price">
+          <span class="price-card__amount" data-price-net={p.priceNet}>
+            {formatPLN(p.priceNet)}
+          </span>
+          <span class="price-card__unit">
+            / mies. <span data-vat-short>{vatLabel}</span>
+          </span>
+        </p>
+        <p class="price-card__hours">
+          <Icon name="clock" size={20} />
+          <span>
+            <strong>{p.hours} h</strong> pracy eksperta miesięcznie
+          </span>
+        </p>
+        {!compact && (
+          <ul class="check-list">
+            {p.inclusions.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        )}
+        <a
+          href={`/kontakt/?pakiet=${p.id}#formularz`}
+          class:list={['btn', 'btn--block', p.highlight ? 'btn--primary' : 'btn--secondary']}
+          aria-label={`Umów bezpłatną rozmowę – pakiet ${p.name}`}
+        >
+          Umów bezpłatną rozmowę
+        </a>
+      </article>
+    ))
+  }
+</div>
+
+<style>
+  .package-grid {
+    align-items: stretch;
+  }
+  .price-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .price-card .check-list {
+    flex: 1;
+  }
+  .price-card .btn {
+    margin-top: auto;
+  }
+  .price-card--highlight {
+    border: 2px solid var(--orange-500);
+    box-shadow: var(--shadow);
+  }
+  @media (min-width: 1000px) {
+    .price-card--highlight {
+      transform: translateY(-10px);
+    }
+  }
+  .price-card__flag {
+    position: absolute;
+    top: -14px;
+    left: var(--s-5);
+  }
+  .price-card__name {
+    font-size: var(--fs-sm);
+    letter-spacing: 0.14em;
+    color: var(--orange-700);
+    margin-bottom: var(--s-1);
+  }
+  .price-card__tagline {
+    min-height: 3.3em;
+    margin-bottom: var(--s-3);
+  }
+  .price-card__price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem;
+    margin-bottom: var(--s-3);
+  }
+  .price-card__amount {
+    font-size: clamp(2rem, 1.6rem + 1.4vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--navy-800);
+    font-variant-numeric: tabular-nums;
+  }
+  .price-card__unit {
+    color: var(--ink-muted);
+    font-weight: 600;
+  }
+  .price-card__hours {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    padding: var(--s-3) var(--s-4);
+    margin-bottom: var(--s-5);
+    background: var(--surface-alt);
+    border-radius: var(--radius-sm);
+    color: var(--navy-800);
+  }
+  .price-card__hours :global(svg) {
+    color: var(--orange-700);
+    flex-shrink: 0;
+  }
+</style>

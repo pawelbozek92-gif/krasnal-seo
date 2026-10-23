@@ -1,0 +1,23 @@
+---
+/** Accordion built on <details>; works without JS. FAQPage JSON-LD is added by the page. */
+import type { FaqItem } from '../data/faq';
+
+export interface Props {
+  items: FaqItem[];
+  center?: boolean;
+}
+const { items, center = false } = Astro.props;
+---
+
+<div class:list={['faq', { 'faq--center': center }]}>
+  {
+    items.map((item) => (
+      <details>
+        <summary>{item.q}</summary>
+        <div class="faq__answer">
+          <p>{item.a}</p>
+        </div>
+      </details>
+    ))
+  }
+</div>

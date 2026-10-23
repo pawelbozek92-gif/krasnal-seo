@@ -1,0 +1,231 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import Faq from '../components/Faq.astro';
+import ContactForm from '../components/ContactForm.astro';
+import { auditFaq } from '../data/faq';
+import { projectById, auditCredit, auditCreditAmount } from '../data/pricing';
+import { site } from '../config/site';
+import { formatPLN } from '../lib/format';
+import { auditService, faqPage } from '../lib/schema';
+
+const audit = projectById('audit');
+const vat = site.vatPayer ? `netto + ${Math.round(site.vatRate * 100)}% VAT` : 'zwolniony z VAT';
+const creditPct = Math.round(auditCredit.rate * 100);
+
+const deliverables = [
+  { icon: 'code', title: 'Crawl techniczny', text: 'Pełne przeskanowanie serwisu: błędy, przekierowania, duplikaty, szybkość, dane strukturalne, renderowanie JS.' },
+  { icon: 'search', title: 'Indeksacja', text: 'Co Google widzi, a czego nie: pokrycie indeksu, kanoniczne adresy, mapy witryny, budżet indeksowania.' },
+  { icon: 'doc', title: 'Treści i konkurencja', text: 'Luka treściowa względem konkurencji i intencji wyszukiwania Twoich klientów B2B.' },
+  { icon: 'map', title: 'Roadmapa na 90 dni', text: 'Konkretne zadania uszeregowane według wpływu i nakładu pracy – gotowe dla developerów i marketingu.' },
+] as const;
+
+const reportOutline = [
+  'Podsumowanie dla zarządu: najważniejsze wnioski na jednej stronie',
+  'Stan techniczny serwisu i lista błędów z priorytetami',
+  'Indeksacja i architektura informacji',
+  'Analiza stron usługowych i ofertowych pod kątem intencji',
+  'Luka treściowa i porównanie z 3–5 konkurentami',
+  'Profil linków i wzmianki o marce',
+  'Gotowość na wyszukiwanie z AI: encja firmy, dane strukturalne',
+  'Pomiar: konfiguracja GA4 i Search Console, śledzenie leadów',
+  'Roadmapa na 90 dni z podziałem na zadania i odpowiedzialności',
+];
+
+const process = [
+  { title: 'Zamówienie i dostępy', text: 'Krótka rozmowa o celach, dostęp do Search Console i GA4.' },
+  { title: 'Analiza', text: 'Crawl, analiza danych, treści i konkurencji.' },
+  { title: 'Raport i roadmapa', text: 'Otrzymujesz raport z konkretną listą działań.' },
+  { title: 'Rozmowa (1 h)', text: 'Omawiamy wyniki i priorytety z Twoim zespołem.' },
+];
+---
+
+<BaseLayout
+  title="Audyt SEO z roadmapą na 90 dni dla firm B2B"
+  description={`Audyt SEO dla firm B2B: crawl techniczny, indeksacja, luka treściowa i roadmapa na 90 dni. ${formatPLN(audit.priceNet)} netto, ${creditPct}% ceny zaliczane na poczet abonamentu.`}
+  path="/audyt-seo/"
+  breadcrumbs={[{ name: 'Audyt SEO', path: '/audyt-seo/' }]}
+  schema={[auditService(), faqPage(auditFaq)]}
+>
+  <section class="page-hero audit-hero">
+    <div class="container split">
+      <div>
+        <span class="eyebrow">Audyt SEO</span>
+        <h1>Audyt SEO z roadmapą na 90 dni</h1>
+        <p class="lead">
+          Dowiedz się, co blokuje wzrost ruchu i zapytań z Google – i co zrobić w pierwszej kolejności. Konkretnie,
+          z priorytetami, bez 200-stronicowego raportu, którego nikt nie wdroży.
+        </p>
+        <div class="btn-row">
+          <a href="#formularz" class="btn btn--primary">Zamów audyt</a>
+          <a href="#zakres" class="btn btn--secondary">Co dostajesz</a>
+        </div>
+      </div>
+      <aside class="card audit-price" aria-labelledby="audit-price-title">
+        <h2 id="audit-price-title" class="audit-price__title">Cena audytu</h2>
+        <p class="audit-price__amount">{formatPLN(audit.priceNet)}</p>
+        <p class="muted small">{vat} · jednorazowo</p>
+        <ul class="check-list">
+          {audit.items.map((i) => <li>{i}</li>)}
+        </ul>
+        <div class="note small">
+          <strong>{creditPct}% ceny audytu ({formatPLN(auditCreditAmount)} netto) wraca do Ciebie</strong> – zaliczam ją
+          na poczet abonamentu, jeśli podpiszesz umowę w ciągu {auditCredit.windowDays} dni od odbioru audytu.
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section" id="zakres" aria-labelledby="scope-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Co dostajesz</span>
+        <h2 id="scope-title">Pełna diagnoza i plan działania</h2>
+      </div>
+      <div class="grid grid--4">
+        {
+          deliverables.map((d) => (
+            <article class="card">
+              <div class="icon-badge">
+                <Icon name={d.icon} />
+              </div>
+              <h3>{d.title}</h3>
+              <p class="muted">{d.text}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="outline-title">
+    <div class="container split">
+      <div>
+        <span class="eyebrow">Przykładowy spis treści</span>
+        <h2 id="outline-title">Co znajdziesz w raporcie</h2>
+        <p class="muted">Zakres dopasowuję do serwisu, ale każdy audyt zawiera te elementy.</p>
+      </div>
+      <ol class="outline">
+        {reportOutline.map((item) => <li>{item}</li>)}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="process-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Przebieg</span>
+        <h2 id="process-title">Jak wygląda audyt krok po kroku</h2>
+      </div>
+      <ol class="process">
+        {
+          process.map((p, i) => (
+            <li>
+              <span class="process__num">{i + 1}</span>
+              <h3>{p.title}</h3>
+              <p class="muted">{p.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="audit-faq-title">
+    <div class="container">
+      <div class="section-head section-head--center">
+        <h2 id="audit-faq-title">Pytania o audyt</h2>
+      </div>
+      <Faq items={auditFaq} center />
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="audit-form-title">
+    <div class="container split split--form">
+      <div>
+        <span class="eyebrow">Zamówienie</span>
+        <h2 id="audit-form-title">Zamów audyt SEO</h2>
+        <p class="muted">
+          Wypełnij formularz – odezwę się w ciągu 1 dnia roboczego, żeby potwierdzić zakres i termin. Płatność: 50%
+          przed startem, 50% po oddaniu audytu.
+        </p>
+        <p class="small muted">Wolisz najpierw porozmawiać? <a href="/kontakt/">Umów bezpłatną rozmowę</a>.</p>
+      </div>
+      <div class="card">
+        <ContactForm source="audyt-seo" submitLabel="Zamów audyt" defaultMessage="Dzień dobry, chcę zamówić audyt SEO z roadmapą na 90 dni." />
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .audit-hero .split {
+    align-items: start;
+  }
+  .audit-price__title {
+    font-size: var(--fs-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--orange-700);
+    margin-bottom: var(--s-2);
+  }
+  .audit-price__amount {
+    font-size: var(--fs-3xl);
+    font-weight: 800;
+    color: var(--navy-800);
+    line-height: 1;
+    margin-bottom: var(--s-2);
+  }
+  .outline {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: outline;
+    display: grid;
+    gap: var(--s-2);
+  }
+  .outline li {
+    counter-increment: outline;
+    display: flex;
+    gap: var(--s-3);
+    padding: var(--s-3) var(--s-4);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+  }
+  .outline li::before {
+    content: counter(outline, decimal-leading-zero);
+    font-weight: 800;
+    color: var(--orange-700);
+  }
+  .process {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--s-5);
+  }
+  @media (min-width: 720px) {
+    .process {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .process li {
+    position: relative;
+    padding-top: var(--s-2);
+  }
+  .process__num {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: var(--s-3);
+    border-radius: 50%;
+    background: var(--navy-800);
+    color: #fff;
+    font-weight: 800;
+  }
+  .split--form {
+    align-items: start;
+  }
+</style>

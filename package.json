@@ -1,0 +1,32 @@
+{
+  "name": "krasnal-seo",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "assets": "node scripts/generate-assets.mjs",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "check:dist": "node scripts/check-dist.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:lighthouse": "lhci autorun --config=lighthouserc.cjs",
+    "test:php": "bash tests/php/contact-smoke.sh",
+    "test": "npm run test:unit && npm run build && npm run check:dist && npm run test:e2e && npm run test:lighthouse"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource-variable/manrope": "^5.3.0",
+    "astro": "^5.18.2",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.64.1",
+    "vitest": "^3.2.7"
+  }
+}

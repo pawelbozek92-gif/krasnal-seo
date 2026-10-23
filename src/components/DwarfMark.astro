@@ -1,0 +1,23 @@
+---
+/** The dwarf + growth-chart mark from the logo, used sparingly as an illustration. */
+import { Picture } from 'astro:assets';
+import mark from '../assets/brand/logo-mark.png';
+
+export interface Props {
+  size?: number;
+  class?: string;
+}
+const { size = 160, class: className } = Astro.props;
+---
+
+<Picture
+  src={mark}
+  formats={['avif', 'webp']}
+  widths={[size, size * 2]}
+  sizes={`${size}px`}
+  width={size}
+  height={Math.round((mark.height / mark.width) * size)}
+  alt=""
+  class={className}
+  loading="lazy"
+/>

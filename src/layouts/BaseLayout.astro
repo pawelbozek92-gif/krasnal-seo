@@ -1,0 +1,102 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import CookieConsent from '../components/CookieConsent.astro';
+import { site, isSet } from '../config/site';
+import { abs, organization, breadcrumbList } from '../lib/schema';
+
+export interface Props {
+  title: string;
+  description: string;
+  /** Canonical path with trailing slash, e.g. "/cennik/". */
+  path: string;
+  noindex?: boolean;
+  ogImage?: string;
+  /** Crumbs after "Strona główna"; omit on the home page. */
+  breadcrumbs?: { name: string; path: string }[];
+  /** Extra JSON-LD nodes merged into the page @graph. */
+  schema?: object[];
+}
+
+const { title, description, path, noindex = false, ogImage = '/og-default.png', breadcrumbs, schema = [] } = Astro.props;
+const canonical = abs(path);
+const fullTitle = path === '/' ? title : `${title} | ${site.brandName}`;
+const crumbs = breadcrumbs ? [{ name: 'Strona główna', path: '/' }, ...breadcrumbs] : undefined;
+
+const graph = {
+  '@context': 'https://schema.org',
+  '@graph': [organization(), ...(crumbs ? [breadcrumbList(crumbs)] : []), ...schema],
+};
+const ga4 = isSet(site.ga4Id) ? site.ga4Id : '';
+// Preview deployments (e.g. GitHub Pages) must never be indexed.
+const previewNoindex = !!process.env.PREVIEW_NOINDEX;
+---
+
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {(noindex || previewNoindex) && <meta name="robots" content="noindex, follow" />}
+    {isSet(site.gscVerification) && <meta name="google-site-verification" content={site.gscVerification} />}
+
+    <link rel="preload" href="/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/manrope-latin-ext-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#0D2B46" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pl_PL" />
+    <meta property="og:site_name" content={site.brandName} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={abs(ogImage)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Krasnal SEO – Małe zmiany, duże wyniki w Google." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={abs(ogImage)} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(graph)} />
+
+    <!-- Google Consent Mode v2: everything denied until the visitor accepts. gtag.js is not loaded before consent. -->
+    <script is:inline define:vars={{ ga4 }}>
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { dataLayer.push(arguments); };
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
+        functionality_storage: 'granted',
+        security_storage: 'granted',
+      });
+      window.__ga4Id = ga4;
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#tresc">Przejdź do treści</a>
+    <Header path={path} />
+    <main id="tresc">
+      {crumbs && <Breadcrumbs items={crumbs} />}
+      <slot />
+    </main>
+    <Footer />
+    <CookieConsent />
+    <script>
+      import '../scripts/reveal';
+    </script>
+  </body>
+</html>

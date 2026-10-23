@@ -1,0 +1,563 @@
+---
+/**
+ * "Złóż swój zakres" calculator. Vanilla JS, keyboard and screen-reader friendly.
+ * All numbers come from src/data/pricing.ts via src/lib/calc.ts.
+ */
+import Icon from '../Icon.astro';
+import {
+  packages,
+  projectById,
+  auditCredit,
+  auditCreditAmount,
+  consultingHoursRange,
+  contentBudgetRange,
+} from '../../data/pricing';
+import { site } from '../../config/site';
+import { formatPLN } from '../../lib/format';
+import { calculate } from '../../lib/calc';
+
+const audit = projectById('audit');
+const strategy = projectById('strategy');
+const consulting = projectById('consulting');
+const initial = calculate({ packageId: 'growth', audit: false, strategy: false, consultingHours: 0, contentBudget: 0 });
+const vatLong = site.vatPayer ? `Ceny netto + ${Math.round(site.vatRate * 100)}% VAT.` : 'Ceny końcowe – zwolniony z VAT.';
+---
+
+<form class="calc" data-calc novalidate aria-labelledby="calc-title" onsubmit="return false">
+  <div class="calc__inputs">
+    <fieldset class="calc__group">
+      <legend><span class="calc__step">1</span> Wybierz abonament</legend>
+      <div class="choice-grid">
+        {
+          packages.map((p) => (
+            <label class="choice">
+              <input type="radio" name="pkg" value={p.id} checked={p.id === 'growth'} />
+              <span class="choice__body">
+                <span class="choice__title">
+                  {p.name}
+                  {p.highlight && <span class="badge badge--popular">Popularny</span>}
+                </span>
+                <span class="choice__meta">
+                  <span data-price-net={p.priceNet} data-price-suffix=" / mies.">
+                    {formatPLN(p.priceNet)} / mies.
+                  </span>
+                  <span>{p.hours} h eksperta</span>
+                </span>
+              </span>
+            </label>
+          ))
+        }
+        <label class="choice">
+          <input type="radio" name="pkg" value="none" />
+          <span class="choice__body">
+            <span class="choice__title">Bez abonamentu</span>
+            <span class="choice__meta"><span>tylko projekt jednorazowy</span></span>
+          </span>
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset class="calc__group">
+      <legend><span class="calc__step">2</span> Projekty jednorazowe <span class="optional">(opcjonalnie)</span></legend>
+      <div class="choice-grid choice-grid--2">
+        <label class="choice choice--check">
+          <input type="checkbox" name="audit" />
+          <span class="choice__body">
+            <span class="choice__title">Audyt SEO + roadmapa</span>
+            <span class="choice__meta"><span data-price-net={audit.priceNet}>{formatPLN(audit.priceNet)}</span></span>
+          </span>
+        </label>
+        <label class="choice choice--check">
+          <input type="checkbox" name="strategy" />
+          <span class="choice__body">
+            <span class="choice__title">Strategia treści</span>
+            <span class="choice__meta"><span data-price-net={strategy.priceNet}>{formatPLN(strategy.priceNet)}</span></span>
+          </span>
+        </label>
+      </div>
+      <p class="small muted calc__hint">
+        Przy audycie i abonamencie {Math.round(auditCredit.rate * 100)}% ceny audytu zaliczam na poczet współpracy
+        (umowa w ciągu {auditCredit.windowDays} dni).
+      </p>
+
+      <div class="field calc__stepper-field">
+        <label for="calc-hours">
+          Dodatkowe godziny konsultacji
+          <span class="optional">
+            (jednorazowo, <span data-price-net={consulting.priceNet} data-price-suffix=" / h">{formatPLN(consulting.priceNet)} / h</span>)
+          </span>
+        </label>
+        <div class="stepper">
+          <button type="button" class="stepper__btn" data-step="-1" aria-label="Odejmij godzinę konsultacji" aria-controls="calc-hours">
+            <Icon name="minus" size={20} />
+          </button>
+          <input
+            id="calc-hours"
+            name="hours"
+            class="input stepper__input"
+            type="number"
+            inputmode="numeric"
+            min={consultingHoursRange.min}
+            max={consultingHoursRange.max}
+            step="1"
+            value="0"
+            aria-describedby="calc-hours-hint"
+          />
+          <button type="button" class="stepper__btn" data-step="1" aria-label="Dodaj godzinę konsultacji" aria-controls="calc-hours">
+            <Icon name="plus" size={20} />
+          </button>
+        </div>
+        <span id="calc-hours-hint" class="small muted">Od {consultingHoursRange.min} do {consultingHoursRange.max} h.</span>
+      </div>
+    </fieldset>
+
+    <div class="calc__group">
+      <div class="calc__legend" id="calc-budget-label">
+        <span class="calc__step">3</span>
+        <label for="calc-budget">Miesięczny budżet na treści i linki</label>
+        <span class="optional">(opcjonalnie)</span>
+      </div>
+      <div class="range-row">
+        <input
+          id="calc-budget"
+          name="budget"
+          type="range"
+          min={contentBudgetRange.min}
+          max={contentBudgetRange.max}
+          step={contentBudgetRange.step}
+          value="0"
+          aria-describedby="calc-budget-note"
+          aria-valuetext="0 zł"
+        />
+        <output for="calc-budget" class="range-row__value" data-out="budget-input">0&nbsp;zł</output>
+      </div>
+      <p id="calc-budget-note" class="small muted calc__hint">
+        Osobny budżet, który co miesiąc akceptujesz i który jest rozliczany oddzielnie (teksty, publikacje, digital
+        PR). Nie jest częścią pakietu – każdą pozycję widzisz osobno.
+      </p>
+    </div>
+  </div>
+
+  <aside class="calc__summary" aria-labelledby="calc-summary-title">
+    <h3 id="calc-summary-title">Twój zakres</h3>
+    <div class="calc__hours">
+      <Icon name="clock" size={22} />
+      <span>
+        Godziny eksperta w miesiącu:
+        <strong data-out="hours">{initial.hours} h</strong>
+        <span class="small" data-out="hours-extra" hidden></span>
+      </span>
+    </div>
+
+    <dl class="summary">
+      <div class="summary__row">
+        <dt data-out="retainer-label">Abonament {initial.packageName}</dt>
+        <dd data-out="retainer">{formatPLN(initial.retainer)}</dd>
+      </div>
+      <div class="summary__row" data-row="budget" hidden>
+        <dt>Budżet na treści i linki <span class="small muted">(osobno, akceptowany przez Ciebie)</span></dt>
+        <dd data-out="budget"></dd>
+      </div>
+      <div class="summary__row summary__row--total">
+        <dt>Miesięcznie razem</dt>
+        <dd data-out="monthly">{formatPLN(initial.monthlyTotal)}</dd>
+      </div>
+
+      <div class="summary__row" data-row="audit" hidden>
+        <dt>Audyt SEO + roadmapa</dt>
+        <dd data-out="audit"></dd>
+      </div>
+      <div class="summary__row" data-row="strategy" hidden>
+        <dt>Strategia treści</dt>
+        <dd data-out="strategy"></dd>
+      </div>
+      <div class="summary__row" data-row="consulting" hidden>
+        <dt data-out="consulting-label">Konsultacje</dt>
+        <dd data-out="consulting"></dd>
+      </div>
+      <div class="summary__row summary__row--total">
+        <dt>Jednorazowo razem</dt>
+        <dd data-out="oneoff">{formatPLN(0)}</dd>
+      </div>
+      <div class="summary__row summary__row--credit" data-row="credit" hidden>
+        <dt>Zaliczenie {Math.round(auditCredit.rate * 100)}% audytu na poczet abonamentu</dt>
+        <dd data-out="credit">{formatPLN(-auditCreditAmount)}</dd>
+      </div>
+      <div class="summary__row summary__row--grand">
+        <dt>Pierwszy miesiąc razem</dt>
+        <dd data-out="first">{formatPLN(initial.firstMonthTotal)}</dd>
+      </div>
+    </dl>
+    <p class="small muted" data-vat-long>{vatLong}</p>
+
+    <p class="visually-hidden" aria-live="polite" aria-atomic="true" data-out="live"></p>
+
+    <a href="/kontakt/#formularz" class="btn btn--primary btn--block" data-calc-cta>
+      Wyślij ten zakres i umów rozmowę
+      <Icon name="arrow" size={18} />
+    </a>
+    <p class="small muted calc__cta-note">Konfiguracja trafi do formularza kontaktowego. Do niczego nie zobowiązuje.</p>
+  </aside>
+</form>
+
+<script>
+  import { calculate, type CalcInput } from '../../lib/calc';
+  import { formatPLN } from '../../lib/format';
+  import { applyVat, money, renderPrices, vatShortLabel, getVatMode } from '../../scripts/vat';
+  import { budgetOptions, consultingHoursRange } from '../../data/pricing';
+  import { withBase } from '../../lib/url';
+
+  const form = document.querySelector<HTMLFormElement>('[data-calc]');
+  if (form) {
+    const $ = <T extends HTMLElement = HTMLElement>(sel: string) => form.querySelector<T>(sel)!;
+    const out = (name: string) => $(`[data-out="${name}"]`);
+    const row = (name: string) => $(`[data-row="${name}"]`);
+    const hoursInput = $<HTMLInputElement>('#calc-hours');
+    const budgetInput = $<HTMLInputElement>('#calc-budget');
+    const cta = $<HTMLAnchorElement>('[data-calc-cta]');
+    let liveTimer: number | undefined;
+
+    const readInput = (): CalcInput => ({
+      packageId: (form.querySelector<HTMLInputElement>('input[name="pkg"]:checked')?.value ?? 'none') as CalcInput['packageId'],
+      audit: $<HTMLInputElement>('input[name="audit"]').checked,
+      strategy: $<HTMLInputElement>('input[name="strategy"]').checked,
+      consultingHours: Number(hoursInput.value),
+      contentBudget: Number(budgetInput.value),
+    });
+
+    function update() {
+      const r = calculate(readInput());
+      const budgetText = formatPLN(r.contentBudget);
+
+      out('budget-input').textContent = budgetText;
+      budgetInput.setAttribute('aria-valuetext', budgetText);
+
+      out('hours').textContent = r.packageName ? `${r.hours} h` : '0 h (bez abonamentu)';
+      const extra = out('hours-extra');
+      extra.hidden = r.consultingHours === 0;
+      extra.textContent = ` + ${r.consultingHours} h konsultacji jednorazowo`;
+
+      out('retainer-label').textContent = r.packageName ? `Abonament ${r.packageName}` : 'Bez abonamentu';
+      out('retainer').textContent = money(r.retainer);
+      row('budget').hidden = r.contentBudget === 0;
+      out('budget').textContent = money(r.contentBudget);
+      out('monthly').textContent = money(r.monthlyTotal);
+
+      row('audit').hidden = !r.audit;
+      out('audit').textContent = money(r.audit);
+      row('strategy').hidden = !r.strategy;
+      out('strategy').textContent = money(r.strategy);
+      row('consulting').hidden = r.consulting === 0;
+      out('consulting-label').textContent = `Konsultacje (${r.consultingHours} h)`;
+      out('consulting').textContent = money(r.consulting);
+      out('oneoff').textContent = money(r.oneOffTotal);
+      row('credit').hidden = r.auditCredit === 0;
+      out('credit').textContent = money(-r.auditCredit);
+      out('first').textContent = money(r.firstMonthTotal);
+
+      // Text sent to the contact form (always netto, the binding price basis).
+      const vat = vatShortLabel();
+      const lines = [
+        r.packageName
+          ? `Pakiet: ${r.packageName} – ${formatPLN(r.retainer)} netto / mies., ${r.hours} h eksperta`
+          : 'Pakiet: bez abonamentu',
+      ];
+      const oneOffs = [
+        r.audit && `Audyt SEO + roadmapa (${formatPLN(r.audit)})`,
+        r.strategy && `Strategia treści (${formatPLN(r.strategy)})`,
+        r.consulting && `Konsultacje ${r.consultingHours} h (${formatPLN(r.consulting)})`,
+      ].filter(Boolean);
+      if (oneOffs.length) lines.push(`Projekty jednorazowe: ${oneOffs.join(', ')}`);
+      if (r.contentBudget) lines.push(`Budżet na treści i linki: ${formatPLN(r.contentBudget)} / mies.`);
+      if (r.auditCredit) lines.push(`Zaliczenie audytu: ${formatPLN(-r.auditCredit)}`);
+      lines.push(
+        `Miesięcznie: ${formatPLN(r.monthlyTotal)} | Jednorazowo: ${formatPLN(r.oneOffTotal)} | Pierwszy miesiąc: ${formatPLN(r.firstMonthTotal)} (netto)`,
+      );
+      const budgetOption =
+        r.monthlyTotal === 0 ? 'nie-wiem' : budgetOptions.find((o) => o.max >= r.monthlyTotal)?.value ?? 'nie-wiem';
+      const params = new URLSearchParams({ konfiguracja: lines.join('\n'), budzet: budgetOption });
+      cta.href = withBase(`/kontakt/?${params.toString()}#formularz`);
+
+      window.clearTimeout(liveTimer);
+      liveTimer = window.setTimeout(() => {
+        out('live').textContent =
+          `Miesięcznie ${formatPLN(applyVat(r.monthlyTotal))}, jednorazowo ${formatPLN(applyVat(r.oneOffTotal))}` +
+          (r.auditCredit ? `, zaliczenie audytu ${formatPLN(applyVat(r.auditCredit))}` : '') +
+          `, pierwszy miesiąc ${formatPLN(applyVat(r.firstMonthTotal))} ${vat}.`;
+      }, 450);
+    }
+
+    form.addEventListener('input', update);
+    form.addEventListener('change', update);
+    document.addEventListener('vatchange', update);
+
+    form.querySelectorAll<HTMLButtonElement>('[data-step]').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        const next = Number(hoursInput.value || 0) + Number(btn.dataset.step);
+        hoursInput.value = String(Math.min(consultingHoursRange.max, Math.max(consultingHoursRange.min, next)));
+        update();
+      }),
+    );
+    hoursInput.addEventListener('blur', () => {
+      const v = Math.round(Number(hoursInput.value) || 0);
+      hoursInput.value = String(Math.min(consultingHoursRange.max, Math.max(consultingHoursRange.min, v)));
+      update();
+    });
+
+    // Preselect from links like /cennik/?pakiet=scale
+    const preset = new URLSearchParams(location.search).get('pakiet');
+    const presetInput = preset && form.querySelector<HTMLInputElement>(`input[name="pkg"][value="${CSS.escape(preset)}"]`);
+    if (presetInput) presetInput.checked = true;
+
+    if (getVatMode() !== 'net') renderPrices(form);
+    update();
+  }
+</script>
+
+<style>
+  .calc {
+    display: grid;
+    gap: var(--s-6);
+    align-items: start;
+  }
+  @media (min-width: 1000px) {
+    .calc {
+      grid-template-columns: 1.35fr 1fr;
+    }
+    .calc__summary {
+      position: sticky;
+      top: calc(var(--header-h) + 1rem);
+    }
+  }
+  .calc__inputs {
+    display: grid;
+    gap: var(--s-6);
+  }
+  .calc__group {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  .calc__group legend,
+  .calc__legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-2);
+    padding: 0;
+    margin-bottom: var(--s-3);
+    font-weight: 800;
+    font-size: var(--fs-lg);
+    color: var(--navy-800);
+  }
+  .calc__legend label {
+    font: inherit;
+  }
+  .optional {
+    font-weight: 500;
+    font-size: var(--fs-sm);
+    color: var(--ink-muted);
+  }
+  .calc__step {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--navy-800);
+    color: #fff;
+    font-size: var(--fs-sm);
+  }
+  .calc__hint {
+    margin: var(--s-3) 0 0;
+  }
+  .choice-grid {
+    display: grid;
+    gap: var(--s-3);
+  }
+  @media (min-width: 560px) {
+    .choice-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .choice {
+    position: relative;
+    display: block;
+    cursor: pointer;
+  }
+  .choice input {
+    position: absolute;
+    top: 1.1rem;
+    left: 1rem;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--navy-800);
+  }
+  .choice__body {
+    display: grid;
+    gap: 2px;
+    height: 100%;
+    padding: var(--s-4) var(--s-4) var(--s-4) 2.9rem;
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    transition:
+      border-color var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out);
+  }
+  .choice:hover .choice__body {
+    border-color: var(--navy-700);
+  }
+  .choice input:checked + .choice__body {
+    border-color: var(--navy-800);
+    background: #f0f4fa;
+    box-shadow: inset 0 0 0 1px var(--navy-800);
+  }
+  .choice input:focus-visible + .choice__body {
+    box-shadow: var(--focus);
+  }
+  .choice__title {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    font-weight: 800;
+    color: var(--navy-800);
+  }
+  .choice__title .badge {
+    padding: 0.1rem 0.5rem;
+  }
+  .choice__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--s-3);
+    font-size: var(--fs-sm);
+    color: var(--ink-muted);
+  }
+  .calc__stepper-field {
+    margin-top: var(--s-5);
+  }
+  .stepper {
+    display: flex;
+    align-items: stretch;
+    width: max-content;
+    gap: var(--s-2);
+  }
+  .stepper__btn {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    color: var(--navy-800);
+    cursor: pointer;
+  }
+  .stepper__btn:hover {
+    border-color: var(--navy-800);
+  }
+  .stepper__input {
+    width: 5.5rem;
+    text-align: center;
+    font-weight: 800;
+  }
+  .range-row {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+  }
+  .range-row input {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    accent-color: var(--orange-700);
+  }
+  .range-row__value {
+    min-width: 6.5rem;
+    text-align: right;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+  .calc__summary {
+    padding: var(--s-5);
+    border-radius: var(--radius);
+    background: #fff;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+  @media (min-width: 720px) {
+    .calc__summary {
+      padding: var(--s-6);
+    }
+  }
+  .calc__hours {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--s-3);
+    padding: var(--s-4);
+    margin-bottom: var(--s-4);
+    border-radius: var(--radius-sm);
+    background: var(--surface-tint);
+    color: var(--navy-800);
+  }
+  .calc__hours :global(svg) {
+    flex-shrink: 0;
+    color: var(--orange-700);
+    margin-top: 2px;
+  }
+  .calc__hours strong {
+    font-size: var(--fs-lg);
+  }
+  .summary {
+    margin: 0 0 var(--s-3);
+  }
+  .summary__row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding: var(--s-2) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .summary__row[hidden] {
+    display: none;
+  }
+  .summary dt {
+    color: var(--ink-muted);
+  }
+  .summary dd {
+    margin: 0;
+    font-weight: 700;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .summary__row--total dt,
+  .summary__row--total dd {
+    color: var(--navy-800);
+    font-weight: 800;
+  }
+  .summary__row--total {
+    border-bottom-width: 2px;
+    margin-bottom: var(--s-2);
+  }
+  .summary__row--credit dt,
+  .summary__row--credit dd {
+    color: var(--success);
+    font-weight: 700;
+  }
+  .summary__row--grand {
+    border: 0;
+    padding-top: var(--s-3);
+  }
+  .summary__row--grand dt,
+  .summary__row--grand dd {
+    color: var(--navy-800);
+    font-weight: 800;
+    font-size: var(--fs-lg);
+  }
+  .calc__cta-note {
+    margin: var(--s-3) 0 0;
+    text-align: center;
+  }
+</style>

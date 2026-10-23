@@ -1,0 +1,118 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Faq from '../components/Faq.astro';
+import { packages, projectById } from '../data/pricing';
+import { formatPLN } from '../lib/format';
+import { abs, ORG_ID, faqPage } from '../lib/schema';
+
+const audit = projectById('audit');
+const minPrice = Math.min(...packages.map((p) => p.priceNet));
+
+const localFaq = [
+  {
+    q: 'Czy możemy spotkać się osobiście we Wrocławiu?',
+    a: 'Tak. Z firmami z Wrocławia i okolic chętnie spotykam się na miejscu – na starcie współpracy, przy warsztatach z zespołem lub omawianiu strategii. Bieżąca praca odbywa się zdalnie.',
+  },
+  {
+    q: 'Czy pomagasz też w SEO lokalnym?',
+    a: 'Tak: strony lokalizacji, profile Google Business, spójność danych firmy w sieci i treści odpowiadające na pytania klientów z regionu. Dla firm B2B łączę to zwykle z widocznością ogólnopolską.',
+  },
+];
+
+const localService = {
+  '@type': 'Service',
+  '@id': abs('/konsultant-seo-wroclaw/#usluga'),
+  name: 'Konsultant SEO Wrocław',
+  serviceType: 'Pozycjonowanie stron (SEO)',
+  provider: { '@id': ORG_ID },
+  areaServed: [
+    { '@type': 'City', name: 'Wrocław' },
+    { '@type': 'AdministrativeArea', name: 'Dolny Śląsk' },
+    { '@type': 'Country', name: 'Polska' },
+  ],
+};
+---
+
+<BaseLayout
+  title="Konsultant SEO Wrocław – SEO dla firm B2B"
+  description="Konsultant SEO we Wrocławiu dla firm B2B z Wrocławia i Dolnego Śląska. Spotkania na miejscu, przejrzyste pakiety z godzinami eksperta, audyt SEO z roadmapą."
+  path="/konsultant-seo-wroclaw/"
+  breadcrumbs={[{ name: 'Konsultant SEO Wrocław', path: '/konsultant-seo-wroclaw/' }]}
+  schema={[localService, faqPage(localFaq)]}
+>
+  <section class="page-hero">
+    <div class="container">
+      <span class="eyebrow">Wrocław i Dolny Śląsk</span>
+      <h1>Konsultant SEO we Wrocławiu dla firm B2B</h1>
+      <p class="lead">
+        Szukasz specjalisty SEO, z którym możesz usiąść przy jednym stole? Pracuję we Wrocławiu i spotykam się z
+        firmami z Dolnego Śląska na miejscu, a z klientami z całej Polski – zdalnie.
+      </p>
+      <div class="btn-row">
+        <a href="/kontakt/" class="btn btn--primary">Umów spotkanie</a>
+        <a href="/cennik/" class="btn btn--secondary">Zobacz cennik</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="local-why">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="local-why">SEO z Wrocławia – lokalnie, gdy to pomaga</h2>
+        <p>
+          Wrocław to silny ośrodek IT, usług biznesowych, logistyki i przemysłu. Rozumiem ten rynek i wiem, jak
+          konkurują tu firmy B2B.
+        </p>
+      </div>
+      <div class="grid grid--3">
+        <article class="card">
+          <div class="icon-badge"><Icon name="user" /></div>
+          <h3>Spotkania na miejscu</h3>
+          <p class="muted">Warsztaty strategiczne, rozmowy z zespołem sprzedaży i przegląd wdrożeń w Twoim biurze we Wrocławiu lub okolicach.</p>
+        </article>
+        <article class="card">
+          <div class="icon-badge"><Icon name="map" /></div>
+          <h3>Widoczność lokalna i ogólnopolska</h3>
+          <p class="muted">Strony lokalizacji i profil firmy w Google dla klientów z regionu, a strony usługowe dla klientów z całej Polski.</p>
+        </article>
+        <article class="card">
+          <div class="icon-badge"><Icon name="clock" /></div>
+          <h3>Te same przejrzyste zasady</h3>
+          <p class="muted">Pakiety od {formatPLN(minPrice)} netto miesięcznie z określoną liczbą godzin, audyt za {formatPLN(audit.priceNet)} netto.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="local-sectors">
+    <div class="container split">
+      <div>
+        <h2 id="local-sectors">Z kim pracuję na Dolnym Śląsku</h2>
+        <p class="muted">
+          Z firmami usługowymi B2B zatrudniającymi od 10 do 250 osób, które sprzedają w regionie lub w całej Polsce.
+        </p>
+      </div>
+      <ul class="check-list">
+        <li>Software house’y i firmy IT</li>
+        <li>Producenci i firmy przemysłowe B2B</li>
+        <li>Firmy logistyczne i transportowe</li>
+        <li>Biura rachunkowe, kancelarie i firmy doradcze</li>
+        <li>Firmy SaaS</li>
+        <li>Firmy szkoleniowe i rekrutacyjne</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="local-faq">
+    <div class="container">
+      <div class="section-head section-head--center">
+        <h2 id="local-faq">Pytania firm z Wrocławia</h2>
+      </div>
+      <Faq items={localFaq} center />
+    </div>
+  </section>
+
+  <CtaBand title="Kawa we Wrocławiu albo rozmowa online?" text="Wybierz formę, która Ci odpowiada. Pierwsza rozmowa jest bezpłatna i do niczego nie zobowiązuje." />
+</BaseLayout>

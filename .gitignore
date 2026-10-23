@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.astro/
+.env
+.env.*
+# Real mail settings for the PHP handler live outside the repo.
+contact-config.php
+# Test output
+test-results/
+playwright-report/
+lighthouse-reports/
+.lighthouseci/
+# Media masters (large, not published) – see README "Hero video & welcome audio"
+media-src/
