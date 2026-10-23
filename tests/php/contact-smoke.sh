@@ -16,9 +16,14 @@ cat > "$CONFIG" <<'PHP'
 <?php return ['recipient' => 'test@example.com', 'from' => 'noreply@example.com'];
 PHP
 
-php -d "sendmail_path=tee -a ${MAILLOG} > /dev/null" -S 127.0.0.1:${PORT} -t public >/dev/null 2>&1 &
+# Fake sendmail: accepts any arguments (PHP passes -t -i and the handler's -f<sender>) and appends the message.
+FAKE_SENDMAIL=$(mktemp)
+printf '#!/bin/sh\ncat >> "%s"\n' "$MAILLOG" > "$FAKE_SENDMAIL"
+chmod +x "$FAKE_SENDMAIL"
+
+php -d "sendmail_path=${FAKE_SENDMAIL}" -S 127.0.0.1:${PORT} -t public >/dev/null 2>&1 &
 SERVER=$!
-cleanup() { kill "$SERVER" 2>/dev/null || true; rm -f "$CONFIG" "$MAILLOG"; }
+cleanup() { kill "$SERVER" 2>/dev/null || true; rm -f "$CONFIG" "$MAILLOG" "$FAKE_SENDMAIL"; }
 trap cleanup EXIT
 for _ in $(seq 1 30); do curl -s -o /dev/null "http://127.0.0.1:${PORT}/" && break; sleep 0.2; done
 
